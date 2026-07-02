@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Цифровий двійник Борислава — Гібридна GIS платформа</title>
+
+    <!-- ===== Leaflet (2D) ===== -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+    <!-- ===== CesiumJS (3D) ===== -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js">
+    </script>
+    <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" />
+
+    <!-- ===== Chart.js (Charts) ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+
+    <!-- ===== Font Awesome ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e17;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ===== CONTAINERS ===== */
+        #cesiumContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        #leafletContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: none;
+        }
+        .leaflet-control-zoom {
+            display: none !important;
+        }
+        .leaflet-control-attribution {
+            background: rgba(10, 14, 23, 0.8) !important;
+            color: #667 !important;
+            font-size: 9px !important;
+        }
+        .leaflet-control-layers {
+            background: rgba(10, 14, 23, 0.92) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-radius: 10px !important;
+            color: #e0e0e0 !important;
+        }
+        .leaflet-control-layers label {
+            color: #b0b8c4 !important;
+            font-size: 12px !important;
+        }
+        .leaflet-control-layers input[type="checkbox"] {
+            accent-color: #fdcb6e !important;
+        }
+        .leaflet-popup-content-wrapper {
+            background: rgba(10, 14, 23, 0.95) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-radius: 10px !important;
+            color: #e0e0e0 !important;
+        }
+        .leaflet-popup-tip {
+            background: rgba(10, 14, 23, 0.95) !important;
+        }
+
+        /* ===== COAT OF ARMS ===== */
+        .coat-of-arms {
+            position: absolute;
+            bottom: 90px;
+            right: 20px;
+            z-index: 999;
+            width: 80px;
+            height: 100px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+        }
+        .coat-of-arms:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .coat-of-arms svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.94);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            flex-wrap: wrap;
+            justify-content: center;
+            pointer-events: none;
+            max-width: 96%;
+        }
+        .top-bar * {
+            pointer-events: auto;
+        }
+        .top-bar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .top-bar .logo .coatsmall {
+            width: 32px;
+            height: 40px;
+            opacity: 0.9;
+        }
+        .top-bar .logo .coatsmall svg {
+            width: 100%;
+            height: 100%;
+        }
+        .top-bar .logo i {
+            font-size: 24px;
+            color: #fdcb6e;
+        }
+        .top-bar .logo h1 {
+            font-size: 17px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fdcb6e, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .top-bar .logo h1 small {
+            font-size: 10px;
+            color: #8892a0;
+            -webkit-text-fill-color: #8892a0;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        .top-bar .status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #81c784;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            padding-left: 14px;
+        }
+        .top-bar .status .dot {
+            width: 6px;
+            height: 6px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+        }
+        .top-bar .stats {
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            color: #8892a0;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            padding-left: 14px;
+        }
+        .top-bar .stats .stat-val {
+            color: #fdcb6e;
+            font-weight: 600;
+        }
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            padding-left: 14px;
+        }
+        .view-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #8892a0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .view-btn:hover {
+            border-color: rgba(253, 203, 110, 0.3);
+            color: #b0b8c4;
+        }
+        .view-btn.active {
+            background: rgba(253, 203, 110, 0.2);
+            border-color: #fdcb6e;
+            color: #fdcb6e;
+        }
+
+        /* ===== LANGUAGE SWITCHER ===== */
+        .lang-toggle {
+            display: flex;
+            gap: 4px;
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            padding-left: 14px;
+        }
+        .lang-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #8892a0;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .lang-btn:hover {
+            border-color: rgba(253, 203, 110, 0.3);
+            color: #b0b8c4;
+        }
+        .lang-btn.active {
+            background: rgba(253, 203, 110, 0.2);
+            border-color: #fdcb6e;
+            color: #fdcb6e;
+        }
+
+        /* ===== MENU TOGGLE BUTTON ===== */
+        .menu-toggle {
+            position: absolute;
+            top: 76px;
+            left: 16px;
+            z-index: 1001;
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #e0e0e0;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .menu-toggle:hover {
+            background: rgba(253, 203, 110, 0.15);
+            border-color: rgba(253, 203, 110, 0.3);
+        }
+        .menu-toggle .badge {
+            font-size: 10px;
+            background: #fdcb6e;
+            color: #0a0e17;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        /* ===== SLIDEOUT MENU ===== */
+        .slideout-menu {
+            position: absolute;
+            top: 70px;
+            left: -420px;
+            width: 400px;
+            max-height: calc(100vh - 160px);
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 16px 18px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .slideout-menu.open {
+            left: 16px;
+        }
+        .slideout-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .slideout-menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .slideout-menu::-webkit-scrollbar-thumb {
+            background: #fdcb6e;
+            border-radius: 4px;
+        }
+
+        .menu-section {
+            margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .menu-section .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fdcb6e;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .menu-section .section-title i {
+            font-size: 13px;
+        }
+        .menu-section .section-title .badge {
+            font-size: 9px;
+            background: rgba(253, 203, 110, 0.15);
+            padding: 1px 8px;
+            border-radius: 10px;
+            color: #fdcb6e;
+            font-weight: 400;
+            text-transform: none;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 7px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            color: #b0b8c4;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            font-family: inherit;
+        }
+        .menu-btn:hover {
+            background: rgba(253, 203, 110, 0.08);
+            border-color: rgba(253, 203, 110, 0.2);
+            color: #e0e0e0;
+        }
+        .menu-btn.active {
+            background: rgba(253, 203, 110, 0.15);
+            border-color: #fdcb6e;
+            color: #fdcb6e;
+        }
+        .menu-btn .color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-select {
+            width: 100%;
+            padding: 7px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .menu-select:focus {
+            outline: none;
+            border-color: #fdcb6e;
+        }
+        .menu-select option {
+            background: #1a1f2e;
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 12px;
+            cursor: pointer;
+            color: #b0b8c4;
+            transition: 0.2s;
+        }
+        .switch-row:hover {
+            color: #e0e0e0;
+        }
+        .switch-row .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .switch-row .switch-label i {
+            width: 18px;
+            text-align: center;
+        }
+        .switch {
+            position: relative;
+            width: 34px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .switch .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        .switch .slider:before {
+            content: "";
+            position: absolute;
+            height: 12px;
+            width: 12px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .switch input:checked+.slider {
+            background: #fdcb6e;
+        }
+        .switch input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+
+        .menu-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+        .menu-grid-2 .menu-btn {
+            margin-bottom: 0;
+        }
+
+        /* ===== TOOL PANEL ===== */
+        .tool-panel {
+            position: absolute;
+            top: 50%;
+            right: 16px;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .tool-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 14, 23, 0.88);
+            backdrop-filter: blur(8px);
+            color: #b0b8c4;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+        .tool-btn:hover {
+            background: rgba(253, 203, 110, 0.15);
+            border-color: rgba(253, 203, 110, 0.3);
+            color: #fdcb6e;
+            transform: scale(1.05);
+        }
+        .tool-btn.active {
+            background: rgba(253, 203, 110, 0.2);
+            border-color: #fdcb6e;
+            color: #fdcb6e;
+        }
+
+        /* ===== COMMAND CENTER (KPI) ===== */
+        .command-center {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 96%;
+        }
+        .kpi-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #b0b8c4;
+        }
+        .kpi-item i {
+            font-size: 16px;
+            width: 22px;
+            text-align: center;
+        }
+        .kpi-item .value {
+            font-weight: 700;
+            color: #e0e0e0;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        .kpi-item .trend {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+        .trend.up {
+            color: #81c784;
+            background: rgba(129, 199, 132, 0.15);
+        }
+        .trend.down {
+            color: #ef5350;
+            background: rgba(239, 83, 80, 0.15);
+        }
+        .trend.stable {
+            color: #ffb74d;
+            background: rgba(255, 183, 77, 0.15);
+        }
+
+        /* ===== INFO PANEL ===== */
+        .info-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 16px;
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.94);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 14px 18px;
+            max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            display: none;
+        }
+        .info-panel.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .info-panel .title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 2px;
+        }
+        .info-panel .sub {
+            font-size: 11px;
+            color: #8892a0;
+            margin-bottom: 6px;
+        }
+        .info-panel .detail {
+            font-size: 12px;
+            color: #b0b8c4;
+            line-height: 1.8;
+        }
+        .info-panel .detail i {
+            width: 18px;
+            color: #fdcb6e;
+        }
+
+        /* ===== MINI CHART ===== */
+        .mini-chart-container {
+            position: absolute;
+            top: 76px;
+            right: 16px;
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 10px 12px;
+            width: 160px;
+            height: 80px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .mini-chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(8px);
+            padding: 6px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #8892a0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .status-bar .highlight {
+            color: #fdcb6e;
+            font-weight: 600;
+        }
+
+        /* ===== NOTIFICATIONS ===== */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(10, 14, 23, 0.95);
+            border-left: 4px solid #fdcb6e;
+            padding: 12px 18px;
+            border-radius: 8px;
+            z-index: 9999;
+            max-width: 360px;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            animation: slideIn 0.3s ease-out;
+            backdrop-filter: blur(12px);
+            color: #e0e0e0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .notification .title {
+            font-weight: 600;
+            color: #fdcb6e;
+            font-size: 12px;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .top-bar .status {
+                display: none;
+            }
+            .top-bar .stats {
+                display: none;
+            }
+            .mini-chart-container {
+                display: none;
+            }
+            .slideout-menu {
+                width: 340px;
+                left: -360px;
+            }
+            .coat-of-arms {
+                width: 56px;
+                height: 70px;
+                bottom: 80px;
+                right: 12px;
+            }
+        }
+        @media (max-width: 768px) {
+            .top-bar {
+                top: 10px;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+            .top-bar .logo h1 {
+                font-size: 14px;
+            }
+            .top-bar .logo h1 small {
+                font-size: 8px;
+            }
+            .top-bar .logo .coatsmall {
+                width: 22px;
+                height: 28px;
+            }
+            .view-btn {
+                font-size: 9px;
+                padding: 3px 8px;
+            }
+            .lang-btn {
+                font-size: 8px;
+                padding: 1px 6px;
+            }
+            .tool-panel {
+                right: 10px;
+                top: 80px;
+                transform: none;
+            }
+            .tool-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            .command-center {
+                bottom: 12px;
+                padding: 6px 12px;
+                gap: 10px;
+            }
+            .kpi-item {
+                font-size: 10px;
+            }
+            .kpi-item .value {
+                font-size: 12px;
+            }
+            .kpi-item i {
+                font-size: 13px;
+                width: 18px;
+            }
+            .info-panel {
+                left: 10px;
+                bottom: 68px;
+                max-width: 200px;
+                padding: 10px 12px;
+            }
+            .slideout-menu {
+                width: 290px;
+                left: -310px;
+                padding: 12px 14px;
+                max-height: calc(100vh - 140px);
+            }
+            .menu-toggle {
+                top: 66px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 16px;
+            }
+            .menu-grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .status-bar {
+                font-size: 9px;
+                padding: 4px 12px;
+            }
+            .coat-of-arms {
+                width: 40px;
+                height: 50px;
+                bottom: 68px;
+                right: 8px;
+            }
+        }
+        @media (max-width: 480px) {
+            .top-bar .logo i {
+                font-size: 18px;
+            }
+            .top-bar .logo h1 {
+                font-size: 12px;
+            }
+            .top-bar .logo .coatsmall {
+                width: 18px;
+                height: 22px;
+            }
+            .tool-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 11px;
+            }
+            .command-center {
+                gap: 6px;
+                padding: 4px 8px;
+            }
+            .kpi-item {
+                font-size: 9px;
+                gap: 4px;
+            }
+            .kpi-item .value {
+                font-size: 10px;
+            }
+            .kpi-item i {
+                font-size: 11px;
+                width: 14px;
+            }
+            .slideout-menu {
+                width: 260px;
+                left: -280px;
+                padding: 10px 10px;
+            }
+            .slideout-menu.open {
+                left: 8px;
+            }
+            .menu-toggle {
+                top: 62px;
+                left: 8px;
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+            .coat-of-arms {
+                width: 32px;
+                height: 40px;
+                bottom: 60px;
+                right: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 3D CONTAINER ===== -->
+    <div id="cesiumContainer"></div>
+
+    <!-- ===== 2D CONTAINER ===== -->
+    <div id="leafletContainer"></div>
+
+    <!-- ===== COAT OF ARMS (Герб Борислава) ===== -->
+    <div class="coat-of-arms" id="coatOfArms" title="Герб Борислава" onclick="showCoatInfo()">
+        <svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Фон щита -->
+            <rect x="50" y="50" width="200" height="250" fill="#1E3A8A" rx="10" />
+
+            <!-- Вежа в центрі щита -->
+            <rect x="120" y="120" width="60" height="100" fill="#E5E7EB" />
+            <rect x="110" y="120" width="80" height="20" fill="#E5E7EB" />
+            <rect x="130" y="80" width="40" height="40" fill="#E5E7EB" />
+            <rect x="125" y="220" width="10" height="20" fill="#9CA3AF" />
+            <rect x="145" y="220" width="10" height="20" fill="#9CA3AF" />
+            <rect x="165" y="220" width="10" height="20" fill="#9CA3AF" />
+
+            <!-- Дзвін -->
+            <ellipse cx="100" cy="100" rx="15" ry="20" fill="#F59E0B" />
+            <rect x="95" y="85" width="10" height="10" fill="#F59E0B" />
+
+            <!-- Мечі -->
+            <line x1="180" y1="80" x2="220" y2="120" stroke="#F59E0B" stroke-width="4" />
+            <line x1="220" y1="80" x2="180" y2="120" stroke="#F59E0B" stroke-width="4" />
+
+            <!-- Золоте оздоблення -->
+            <path d="M30,50 Q50,30 70,50 L90,70 Q110,50 130,70 L150,50 Q170,30 190,50 L210,70 Q230,50 250,70 L270,50"
+                  fill="none" stroke="#F59E0B" stroke-width="8" />
+            <path d="M30,280 Q50,300 70,280 L90,260 Q110,280 130,260 L150,280 Q170,300 190,280 L210,260 Q230,280 250,260 L270,280"
+                  fill="none" stroke="#F59E0B" stroke-width="8" />
+
+            <!-- Верхня частина герба (корони) -->
+            <rect x="100" y="10" width="100" height="30" fill="#E5E7EB" />
+            <rect x="90" y="20" width="20" height="20" fill="#E5E7EB" />
+            <rect x="110" y="20" width="20" height="20" fill="#E5E7EB" />
+            <rect x="130" y="20" width="20" height="20" fill="#E5E7EB" />
+            <rect x="150" y="20" width="20" height="20" fill="#E5E7EB" />
+            <rect x="170" y="20" width="20" height="20" fill="#E5E7EB" />
+        </svg>
+    </div>
+
+    <!-- ===== TOP BAR ===== -->
+    <div class="top-bar">
+        <div class="logo">
+            <div class="coatsmall">
+                <svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="50" y="50" width="200" height="250" fill="#1E3A8A" rx="10" />
+                    <rect x="120" y="120" width="60" height="100" fill="#E5E7EB" />
+                    <rect x="110" y="120" width="80" height="20" fill="#E5E7EB" />
+                    <rect x="130" y="80" width="40" height="40" fill="#E5E7EB" />
+                    <rect x="125" y="220" width="10" height="20" fill="#9CA3AF" />
+                    <rect x="145" y="220" width="10" height="20" fill="#9CA3AF" />
+                    <rect x="165" y="220" width="10" height="20" fill="#9CA3AF" />
+                    <ellipse cx="100" cy="100" rx="15" ry="20" fill="#F59E0B" />
+                    <rect x="95" y="85" width="10" height="10" fill="#F59E0B" />
+                    <line x1="180" y1="80" x2="220" y2="120" stroke="#F59E0B" stroke-width="4" />
+                    <line x1="220" y1="80" x2="180" y2="120" stroke="#F59E0B" stroke-width="4" />
+                    <path d="M30,50 Q50,30 70,50 L90,70 Q110,50 130,70 L150,50 Q170,30 190,50 L210,70 Q230,50 250,70 L270,50"
+                          fill="none" stroke="#F59E0B" stroke-width="8" />
+                    <path d="M30,280 Q50,300 70,280 L90,260 Q110,280 130,260 L150,280 Q170,300 190,280 L210,260 Q230,280 250,260 L270,280"
+                          fill="none" stroke="#F59E0B" stroke-width="8" />
+                    <rect x="100" y="10" width="100" height="30" fill="#E5E7EB" />
+                    <rect x="90" y="20" width="20" height="20" fill="#E5E7EB" />
+                    <rect x="110" y="20" width="20" height="20" fill="#E5E7EB" />
+                    <rect x="130" y="20" width="20" height="20" fill="#E5E7EB" />
+                    <rect x="150" y="20" width="20" height="20" fill="#E5E7EB" />
+                    <rect x="170" y="20" width="20" height="20" fill="#E5E7EB" />
+                </svg>
+            </div>
+            <h1>Борислав <small>Цифровий двійник</small></h1>
+        </div>
+        <div class="status">
+            <span class="dot"></span>
+            <span id="statusText">Онлайн · Live</span>
+        </div>
+        <div class="stats">
+            <span><i class="fas fa-layer-group"></i> Шари: <span class="stat-val" id="layerCount">12</span></span>
+            <span><i class="fas fa-building"></i> Об'єктів: <span class="stat-val" id="objectCount">2,847</span></span>
+            <span><i class="fas fa-satellite"></i> <span class="stat-val" id="gpsStatus">● GPS</span></span>
+        </div>
+        <div class="lang-toggle">
+            <button class="lang-btn active" data-lang="uk" onclick="switchLanguage('uk')">UA</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
+            <button class="lang-btn" data-lang="pl" onclick="switchLanguage('pl')">PL</button>
+        </div>
+        <div class="view-toggle">
+            <button class="view-btn active" id="view3D" onclick="switchView('3d')">3D</button>
+            <button class="view-btn" id="view2D" onclick="switchView('2d')">2D</button>
+        </div>
+    </div>
+
+    <!-- ===== MENU TOGGLE ===== -->
+    <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+        <span class="badge" id="menuBadge">Меню</span>
+    </button>
+
+    <!-- ===== SLIDEOUT MENU ===== -->
+    <div class="slideout-menu" id="slideoutMenu">
+
+        <!-- ===== MAP TYPE ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-map"></i> <span data-key="mapType">Тип мапи</span></div>
+            <div class="menu-grid-2">
+                <button class="menu-btn active" data-type="standard" onclick="setMapType('standard')">
+                    <i class="fas fa-map"></i> <span data-key="standard">Стандартна</span>
+                </button>
+                <button class="menu-btn" data-type="topo" onclick="setMapType('topo')">
+                    <i class="fas fa-mountain"></i> <span data-key="topo">Топо</span>
+                </button>
+                <button class="menu-btn" data-type="satellite" onclick="setMapType('satellite')">
+                    <i class="fas fa-satellite"></i> <span data-key="satellite">Супутник</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== PROVIDER ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-server"></i> <span data-key="provider">Провайдер</span></div>
+            <select class="menu-select" id="providerSelect" onchange="switchProvider(this.value)">
+                <option value="osm">OpenStreetMap</option>
+                <option value="cartodb">CartoDB Dark</option>
+                <option value="google">Google Maps</option>
+                <option value="yandex">Yandex Maps</option>
+                <option value="stadiamaps">Stadia Maps</option>
+                <option value="cyclosm">CyclOSM</option>
+                <option value="opentopomap">OpenTopoMap</option>
+                <option value="arcgis">ArcGIS Satellite</option>
+            </select>
+        </div>
+
+        <!-- ===== BORYSLAV LAYERS ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-city"></i> <span data-key="borislavLayers">Борислав — шари</span> <span class="badge">Геодані</span></div>
+            <div class="switch-row" onclick="toggleLayer('buildings')">
+                <span class="switch-label"><i class="fas fa-building" style="color:#fdcb6e;"></i> <span data-key="buildings">Будівлі</span></span>
+                <label class="switch"><input type="checkbox" checked id="layerBuildings"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('roads')">
+                <span class="switch-label"><i class="fas fa-road" style="color:#74b9ff;"></i> <span data-key="roads">Дороги</span></span>
+                <label class="switch"><input type="checkbox" checked id="layerRoads"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('railways')">
+                <span class="switch-label"><i class="fas fa-train" style="color:#a29bfe;"></i> <span data-key="railways">Залізниця</span></span>
+                <label class="switch"><input type="checkbox" id="layerRailways"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('water')">
+                <span class="switch-label"><i class="fas fa-water" style="color:#2196F3;"></i> <span data-key="water">Водойми</span></span>
+                <label class="switch"><input type="checkbox" id="layerWater"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('green')">
+                <span class="switch-label"><i class="fas fa-tree" style="color:#81c784;"></i> <span data-key="green">Зелені зони</span></span>
+                <label class="switch"><input type="checkbox" id="layerGreen"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <!-- ===== INFRASTRUCTURE ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-plug"></i> <span data-key="infrastructure">Інфраструктура</span> <span class="badge">Комунальні</span></div>
+            <div class="switch-row" onclick="toggleLayer('waterSupply')">
+                <span class="switch-label"><i class="fas fa-faucet" style="color:#4fc3f7;"></i> <span data-key="waterSupply">Водопровід</span></span>
+                <label class="switch"><input type="checkbox" id="layerWaterSupply"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('gas')">
+                <span class="switch-label"><i class="fas fa-fire" style="color:#ff6b6b;"></i> <span data-key="gas">Газ</span></span>
+                <label class="switch"><input type="checkbox" id="layerGas"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('electricity')">
+                <span class="switch-label"><i class="fas fa-bolt" style="color:#ffd700;"></i> <span data-key="electricity">Електромережі</span></span>
+                <label class="switch"><input type="checkbox" id="layerElectricity"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('heating')">
+                <span class="switch-label"><i class="fas fa-thermometer-half" style="color:#ff6b6b;"></i> <span data-key="heating">Тепломережі</span></span>
+                <label class="switch"><input type="checkbox" id="layerHeating"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <!-- ===== GEOLOGY ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-mountain"></i> <span data-key="geology">Геологія</span> <span class="badge">Нафта · Озокерит</span></div>
+            <div class="switch-row" onclick="toggleLayer('oil')">
+                <span class="switch-label"><i class="fas fa-oil-can" style="color:#8B4513;"></i> <span data-key="oil">Нафтові родовища</span></span>
+                <label class="switch"><input type="checkbox" id="layerOil"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('ozokerite')">
+                <span class="switch-label"><i class="fas fa-gem" style="color:#D4A574;"></i> <span data-key="ozokerite">Озокерит</span></span>
+                <label class="switch"><input type="checkbox" id="layerOzokerite"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('mines')">
+                <span class="switch-label"><i class="fas fa-hard-hat" style="color:#a0522d;"></i> <span data-key="mines">Шахти</span></span>
+                <label class="switch"><input type="checkbox" id="layerMines"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row" onclick="toggleLayer('karst')">
+                <span class="switch-label"><i class="fas fa-circle" style="color:#c0392b;"></i> <span data-key="karst">Карст · Пустоти</span></span>
+                <label class="switch"><input type="checkbox" id="layerKarst"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <!-- ===== SOCIAL ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-hospital"></i> <span data-key="social">Соціальна інфраструктура</span></div>
+            <div class="menu-grid-2">
+                <button class="menu-btn" onclick="flyToCategory('schools')"><i class="fas fa-school"></i> <span data-key="schools">Школи</span></button>
+                <button class="menu-btn" onclick="flyToCategory('hospitals')"><i class="fas fa-hospital"></i> <span data-key="hospitals">Лікарні</span></button>
+                <button class="menu-btn" onclick="flyToCategory('police')"><i class="fas fa-shield-alt"></i> <span data-key="police">Поліція</span></button>
+                <button class="menu-btn" onclick="flyToCategory('fire')"><i class="fas fa-fire-extinguisher"></i> <span data-key="fire">Пожежна</span></button>
+                <button class="menu-btn" onclick="flyToCategory('pharmacies')"><i class="fas fa-prescription"></i> <span data-key="pharmacies">Аптеки</span></button>
+                <button class="menu-btn" onclick="flyToCategory('parks')"><i class="fas fa-tree"></i> <span data-key="parks">Парки</span></button>
+            </div>
+        </div>
+
+        <!-- ===== ACTIONS ===== -->
+        <div class="menu-section">
+            <div class="section-title"><i class="fas fa-bolt"></i> <span data-key="actions">Дії</span></div>
+            <button class="menu-btn" onclick="locateUser()"><i class="fas fa-location-crosshairs"></i> <span data-key="myLocation">Моє місце</span></button>
+            <button class="menu-btn" onclick="toggleFullscreen()"><i class="fas fa-expand"></i> <span data-key="fullscreen">Повний екран</span></button>
+            <button class="menu-btn" onclick="generateReport()"><i class="fas fa-file-pdf"></i> <span data-key="report">Звіт про стан</span></button>
+            <button class="menu-btn" onclick="showCoatInfo()"><i class="fas fa-shield-alt"></i> <span data-key="coat">Герб Борислава</span></button>
+        </div>
+
+    </div>
+
+    <!-- ===== TOOL PANEL ===== -->
+    <div class="tool-panel">
+        <button class="tool-btn" id="btnZoomIn" title="Збільшити"><i class="fas fa-plus"></i></button>
+        <button class="tool-btn" id="btnZoomOut" title="Зменшити"><i class="fas fa-minus"></i></button>
+        <button class="tool-btn" id="btnReset" title="Скинути вид"><i class="fas fa-home"></i></button>
+        <button class="tool-btn" id="btnLocation" title="Моє місце"><i class="fas fa-location-dot"></i></button>
+        <button class="tool-btn" id="btnAutoRotate" title="Автообертання"><i class="fas fa-sync-alt"></i></button>
+        <button class="tool-btn" id="btnFullscreen" title="Повний екран"><i class="fas fa-expand"></i></button>
+    </div>
+
+    <!-- ===== MINI CHART ===== -->
+    <div class="mini-chart-container">
+        <canvas id="miniChart"></canvas>
+    </div>
+
+    <!-- ===== COMMAND CENTER ===== -->
+    <div class="command-center" id="commandCenter">
+        <div class="kpi-item">
+            <i class="fas fa-thermometer-half" style="color:#ff6b6b;"></i>
+            <span class="value" id="kpi-temp">23.5</span>°C
+        </div>
+        <div class="kpi-item">
+            <i class="fas fa-wind" style="color:#4fc3f7;"></i>
+            <span class="value" id="kpi-aqi">42</span> <span data-key="aqi">AQI</span>
+            <span class="trend up" id="kpi-aqi-trend">↑</span>
+        </div>
+        <div class="kpi-item">
+            <i class="fas fa-oil-can" style="color:#8B4513;"></i>
+            <span class="value" id="kpi-oil">2,340</span> <span data-key="oilProduction">т/міс</span>
+            <span class="trend up" id="kpi-oil-trend">↑</span>
+        </div>
+        <div class="kpi-item">
+            <i class="fas fa-gem" style="color:#D4A574;"></i>
+            <span class="value" id="kpi-ozokerite">185</span> <span data-key="ozokeriteProduction">т/міс</span>
+            <span class="trend stable" id="kpi-ozokerite-trend">—</span>
+        </div>
+        <div class="kpi-item">
+            <i class="fas fa-water" style="color:#2196F3;"></i>
+            <span class="value" id="kpi-water">4.8</span> <span data-key="waterLevel">м</span>
+            <span class="trend stable" id="kpi-water-trend">—</span>
+        </div>
+        <div class="kpi-item">
+            <i class="fas fa-triangle-exclamation" style="color:#ef5350;"></i>
+            <span class="value" id="kpi-incidents">3</span>
+            <span class="trend down" id="kpi-incidents-trend">↓</span>
+        </div>
+        <div class="kpi-item">
+            <i class="fas fa-users" style="color:#81c784;"></i>
+            <span class="value" id="kpi-tourists">1,240</span>
+            <span class="trend up" id="kpi-tourists-trend">↑</span>
+        </div>
+    </div>
+
+    <!-- ===== INFO PANEL ===== -->
+    <div class="info-panel" id="infoPanel">
+        <div class="title" id="infoTitle">Об'єкт</div>
+        <div class="sub" id="infoSub">🏷️ Тип · Деталі</div>
+        <div class="detail" id="infoDetail">
+            <i class="fas fa-map-pin"></i> <span id="infoCoords">—</span><br>
+            <i class="fas fa-info-circle"></i> <span id="infoDescription">—</span>
+        </div>
+    </div>
+
+    <!-- ===== STATUS BAR ===== -->
+    <div class="status-bar">
+        <span id="coordDisplay">📍 —</span>
+        <span><span data-key="layer">Шар</span>: <span id="layerDisplay" class="highlight">Стандартна</span></span>
+        <span><span data-key="provider">Провайдер</span>: <span id="providerDisplay" class="highlight">OpenStreetMap</span></span>
+        <span id="cityDisplay">🏙️ Борислав, Львівська обл.</span>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ===== SCRIPT ===== -->
+    <!-- ============================================================ -->
+    <script>
+        // ============================================================
+        // 1. LANGUAGE DATA
+        // ============================================================
+        const LANGUAGES = {
+            uk: {
+                statusText: 'Онлайн · Live',
+                menuBadge: 'Меню',
+                mapType: 'Тип мапи',
+                standard: 'Стандартна',
+                topo: 'Топо',
+                satellite: 'Супутник',
+                provider: 'Провайдер',
+                borislavLayers: 'Борислав — шари',
+                buildings: 'Будівлі',
+                roads: 'Дороги',
+                railways: 'Залізниця',
+                water: 'Водойми',
+                green: 'Зелені зони',
+                infrastructure: 'Інфраструктура',
+                waterSupply: 'Водопровід',
+                gas: 'Газ',
+                electricity: 'Електромережі',
+                heating: 'Тепломережі',
+                geology: 'Геологія',
+                oil: 'Нафтові родовища',
+                ozokerite: 'Озокерит',
+                mines: 'Шахти',
+                karst: 'Карст · Пустоти',
+                social: 'Соціальна інфраструктура',
+                schools: 'Школи',
+                hospitals: 'Лікарні',
+                police: 'Поліція',
+                fire: 'Пожежна',
+                pharmacies: 'Аптеки',
+                parks: 'Парки',
+                actions: 'Дії',
+                myLocation: 'Моє місце',
+                fullscreen: 'Повний екран',
+                report: 'Звіт про стан',
+                coat: 'Герб Борислава',
+                aqi: 'AQI',
+                oilProduction: 'т/міс',
+                ozokeriteProduction: 'т/міс',
+                waterLevel: 'м',
+                layer: 'Шар',
+                city: 'Місто',
+                status: 'Статус',
+                objects: 'об\'єктів'
+            },
+            en: {
+                statusText: 'Online · Live',
+                menuBadge: 'Menu',
+                mapType: 'Map Type',
+                standard: 'Standard',
+                topo: 'Topo',
+                satellite: 'Satellite',
+                provider: 'Provider',
+                borislavLayers: 'Boryslav — Layers',
+                buildings: 'Buildings',
+                roads: 'Roads',
+                railways: 'Railways',
+                water: 'Water bodies',
+                green: 'Green zones',
+                infrastructure: 'Infrastructure',
+                waterSupply: 'Water supply',
+                gas: 'Gas',
+                electricity: 'Electricity',
+                heating: 'Heating',
+                geology: 'Geology',
+                oil: 'Oil fields',
+                ozokerite: 'Ozokerite',
+                mines: 'Mines',
+                karst: 'Karst · Voids',
+                social: 'Social infrastructure',
+                schools: 'Schools',
+                hospitals: 'Hospitals',
+                police: 'Police',
+                fire: 'Fire stations',
+                pharmacies: 'Pharmacies',
+                parks: 'Parks',
+                actions: 'Actions',
+                myLocation: 'My Location',
+                fullscreen: 'Fullscreen',
+                report: 'Status Report',
+                coat: 'Coat of Arms of Boryslav',
+                aqi: 'AQI',
+                oilProduction: 't/month',
+                ozokeriteProduction: 't/month',
+                waterLevel: 'm',
+                layer: 'Layer',
+                city: 'City',
+                status: 'Status',
+                objects: 'objects'
+            },
+            pl: {
+                statusText: 'Online · Na żywo',
+                menuBadge: 'Menu',
+                mapType: 'Typ mapy',
+                standard: 'Standardowa',
+                topo: 'Topo',
+                satellite: 'Satelita',
+                provider: 'Dostawca',
+                borislavLayers: 'Borysław — warstwy',
+                buildings: 'Budynki',
+                roads: 'Drogi',
+                railways: 'Kolej',
+                water: 'Zbiorniki wodne',
+                green: 'Strefy zielone',
+                infrastructure: 'Infrastruktura',
+                waterSupply: 'Wodociąg',
+                gas: 'Gaz',
+                electricity: 'Elektryczność',
+                heating: 'Ogrzewanie',
+                geology: 'Geologia',
+                oil: 'Złoża ropy',
+                ozokerite: 'Ozokeryt',
+                mines: 'Kopalnie',
+                karst: 'Karst · Pustki',
+                social: 'Infrastruktura społeczna',
+                schools: 'Szkoły',
+                hospitals: 'Szpitale',
+                police: 'Policja',
+                fire: 'Straż pożarna',
+                pharmacies: 'Apteki',
+                parks: 'Parki',
+                actions: 'Akcje',
+                myLocation: 'Moja lokalizacja',
+                fullscreen: 'Pełny ekran',
+                report: 'Raport o stanie',
+                coat: 'Herb Borysławia',
+                aqi: 'AQI',
+                oilProduction: 't/mies',
+                ozokeriteProduction: 't/mies',
+                waterLevel: 'm',
+                layer: 'Warstwa',
+                city: 'Miasto',
+                status: 'Status',
+                objects: 'obiektów'
+            }
+        };
+
+        let currentLang = 'uk';
+
+        // ============================================================
+        // 2. BORYSLAV DATA
+        // ============================================================
+        const BORYSLAV_DATA = {
+            center: [49.285, 23.425],
+            zoom: 13,
+            buildings: [
+                { id: 1, name: 'Бориславська міська рада', coords: [49.287, 23.427], floors: 4, type: 'Адміністрація',
+                    year: 1956, condition: 'good' },
+                { id: 2, name: 'Палац культури "Нафтовик"', coords: [49.285, 23.428], floors: 3, type: 'Культура',
+                    year: 1972, condition: 'fair' },
+                { id: 3, name: 'Школа №1', coords: [49.288, 23.425], floors: 3, type: 'Освіта', year: 1965,
+                condition: 'good' },
+                { id: 4, name: 'Ліцей №2', coords: [49.284, 23.430], floors: 4, type: 'Освіта', year: 1980,
+                condition: 'good' },
+                { id: 5, name: 'Центральна лікарня', coords: [49.290, 23.422], floors: 5, type: 'Медицина',
+                    year: 1978, condition: 'good' },
+                { id: 6, name: 'Старий клуб', coords: [49.283, 23.431], floors: 2, type: 'Історична', year: 1895,
+                    condition: 'fair' },
+                { id: 7, name: 'Нафтопереробний завод', coords: [49.280, 23.435], floors: 6, type: 'Промисловість',
+                    year: 1960, condition: 'good' },
+                { id: 8, name: 'ТЦ "Борислав"', coords: [49.288, 23.429], floors: 2, type: 'Торгівля', year: 2005,
+                    condition: 'excellent' },
+                { id: 9, name: 'Будинок культури', coords: [49.286, 23.426], floors: 2, type: 'Культура', year: 1985,
+                    condition: 'good' },
+                { id: 10, name: 'Дитячий садок "Сонечко"', coords: [49.289, 23.424], floors: 2, type: 'Освіта',
+                    year: 1975, condition: 'good' }
+            ],
+            roads: [
+                { id: 1, name: 'вул. Шевченка', coords: [
+                        [49.290, 23.420],
+                        [49.288, 23.422],
+                        [49.286, 23.426],
+                        [49.284, 23.430]
+                    ], type: 'main' },
+                { id: 2, name: 'вул. Франка', coords: [
+                        [49.292, 23.418],
+                        [49.290, 23.420],
+                        [49.288, 23.422]
+                    ], type: 'main' },
+                { id: 3, name: 'вул. Грушевського', coords: [
+                        [49.286, 23.422],
+                        [49.285, 23.425],
+                        [49.284, 23.428]
+                    ], type: 'secondary' },
+                { id: 4, name: 'вул. Центральна', coords: [
+                        [49.289, 23.424],
+                        [49.287, 23.428],
+                        [49.285, 23.432]
+                    ], type: 'main' },
+                { id: 5, name: 'вул. Львівська', coords: [
+                        [49.292, 23.415],
+                        [49.290, 23.418],
+                        [49.288, 23.420]
+                    ], type: 'main' }
+            ],
+            water: [
+                { id: 1, name: 'р. Тисмениця', coords: [
+                        [49.295, 23.410],
+                        [49.290, 23.420],
+                        [49.285, 23.430],
+                        [49.280, 23.440]
+                    ], type: 'river' },
+                { id: 2, name: 'Ставок міський', coords: [49.287, 23.432], type: 'pond' }
+            ],
+            green: [
+                { id: 1, name: 'Парк "Нафтовик"', coords: [49.286, 23.428], type: 'park' },
+                { id: 2, name: 'Сквер Шевченка', coords: [49.289, 23.425], type: 'square' },
+                { id: 3, name: 'Лісопарк', coords: [49.282, 23.430], type: 'forest' }
+            ],
+            waterSupply: [
+                { id: 1, name: 'Водопровід вул. Шевченка', coords: [
+                        [49.290, 23.420],
+                        [49.288, 23.422],
+                        [49.286, 23.426]
+                    ] },
+                { id: 2, name: 'Водопровід вул. Франка', coords: [
+                        [49.292, 23.418],
+                        [49.290, 23.420]
+                    ] }
+            ],
+            gas: [
+                { id: 1, name: 'Газопровід вул. Центральна', coords: [
+                        [49.289, 23.424],
+                        [49.287, 23.428],
+                        [49.285, 23.432]
+                    ] },
+                { id: 2, name: 'Газопровід вул. Шевченка', coords: [
+                        [49.290, 23.420],
+                        [49.288, 23.422],
+                        [49.286, 23.426]
+                    ] }
+            ],
+            electricity: [
+                { id: 1, name: 'ЛЕП-110 кВ', coords: [
+                        [49.292, 23.415],
+                        [49.288, 23.422],
+                        [49.284, 23.430]
+                    ] },
+                { id: 2, name: 'ЛЕП вул. Франка', coords: [
+                        [49.292, 23.418],
+                        [49.290, 23.420]
+                    ] }
+            ],
+            heating: [
+                { id: 1, name: 'Теплотраса вул. Шевченка', coords: [
+                        [49.290, 23.420],
+                        [49.288, 23.422],
+                        [49.286, 23.426]
+                    ] }
+            ],
+            oilFields: [
+                { id: 1, name: 'Бориславське нафтове родовище', coords: [49.278, 23.440], status: 'active',
+                    reserves: '12.5 млн т' },
+                { id: 2, name: 'Східно-Бориславське', coords: [49.275, 23.445], status: 'active',
+                    reserves: '8.2 млн т' },
+                { id: 3, name: 'Західно-Бориславське', coords: [49.282, 23.438], status: 'active',
+                    reserves: '5.8 млн т' }
+            ],
+            ozokerite: [
+                { id: 1, name: 'Родовище озокериту', coords: [49.272, 23.448], status: 'active',
+                    reserves: '450 тис. т' },
+                { id: 2, name: 'Озокеритове родовище №2', coords: [49.276, 23.442], status: 'active',
+                    reserves: '320 тис. т' }
+            ],
+            mines: [
+                { id: 1, name: 'Шахта "Нафтова"', coords: [49.280, 23.438], depth: 1200, status: 'active' },
+                { id: 2, name: 'Шахта "Озокеритова"', coords: [49.274, 23.446], depth: 800, status: 'active' },
+                { id: 3, name: 'Шахта "Східна"', coords: [49.278, 23.442], depth: 950, status: 'inactive' }
+            ],
+            karst: [
+                { id: 1, name: 'Карстова пустота', coords: [49.285, 23.430], depth: 45, risk: 'medium' },
+                { id: 2, name: 'Пустота вул. Шевченка', coords: [49.288, 23.424], depth: 30, risk: 'low' }
+            ],
+            schools: [
+                { id: 1, name: 'Школа №1', coords: [49.288, 23.425], type: 'school', students: 420 },
+                { id: 2, name: 'Ліцей №2', coords: [49.284, 23.430], type: 'school', students: 380 },
+                { id: 3, name: 'Дитячий садок "Сонечко"', coords: [49.289, 23.424], type: 'kindergarten',
+                    children: 120 }
+            ],
+            hospitals: [
+                { id: 1, name: 'Центральна лікарня', coords: [49.290, 23.422], type: 'hospital', beds: 150 },
+                { id: 2, name: 'Поліклініка №1', coords: [49.286, 23.427], type: 'clinic', beds: 30 }
+            ],
+            police: [
+                { id: 1, name: 'Відділ поліції', coords: [49.287, 23.426], type: 'police' }
+            ],
+            fire: [
+                { id: 1, name: 'Пожежна частина', coords: [49.289, 23.423], type: 'fire' }
+            ],
+            pharmacies: [
+                { id: 1, name: 'Аптека "Віта"', coords: [49.288, 23.427], type: 'pharmacy' },
+                { id: 2, name: 'Аптека "Здоров\'я"', coords: [49.286, 23.425], type: 'pharmacy' }
+            ],
+            parks: [
+                { id: 1, name: 'Парк "Нафтовик"', coords: [49.286, 23.428], type: 'park' },
+                { id: 2, name: 'Сквер Шевченка', coords: [49.289, 23.425], type: 'square' }
+            ]
+        };
+
+        // ============================================================
+        // 3. GLOBAL VARIABLES
+        // ============================================================
+        let currentView = '3d';
+        let cesiumViewer = null;
+        let leafletMap = null;
+        let miniChart = null;
+        let autoRotate = false;
+        let menuOpen = false;
+        let layerGroups = {};
+        let userMarker = null;
+        let baseLayer = null;
+        let currentProvider = 'osm';
+        let mapType = 'standard';
+
+        // ============================================================
+        // 4. COAT OF ARMS INFO
+        // ============================================================
+        function showCoatInfo() {
+            const panel = document.getElementById('infoPanel');
+            document.getElementById('infoTitle').textContent = '🛡️ Герб Борислава';
+            document.getElementById('infoSub').textContent = '🏛️ Символ міста';
+            document.getElementById('infoDetail').innerHTML = `
+                <i class="fas fa-shield-alt"></i> Синій щит — символ вірності<br>
+                <i class="fas fa-tower-observation"></i> Вежа — символ захисту<br>
+                <i class="fas fa-bell"></i> Дзвін — історична спадщина<br>
+                <i class="fas fa-sword"></i> Мечі — мужність захисників<br>
+                <i class="fas fa-crown"></i> Корона — міське самоврядування<br>
+                <i class="fas fa-oil-can"></i> Нафта — головне багатство<br>
+                <i class="fas fa-gem"></i> Озокерит — унікальний ресурс
+            `;
+            document.getElementById('infoCoords').textContent = 'Борислав, Львівська обл.';
+            panel.classList.add('visible');
+            if (menuOpen) toggleMenu();
+        }
+
+        // ============================================================
+        // 5. LANGUAGE FUNCTIONS
+        // ============================================================
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.dataset.key;
+                if (LANGUAGES[lang][key]) {
+                    el.textContent = LANGUAGES[lang][key];
+                }
+            });
+
+            document.getElementById('statusText').textContent = LANGUAGES[lang].statusText;
+            document.getElementById('menuBadge').textContent = LANGUAGES[lang].menuBadge;
+        }
+
+        // ============================================================
+        // 6. MENU TOGGLE
+        // ============================================================
+        function toggleMenu() {
+            menuOpen = !menuOpen;
+            document.getElementById('slideoutMenu').classList.toggle('open', menuOpen);
+            document.getElementById('menuToggle').innerHTML = menuOpen ?
+                '<i class="fas fa-times"></i><span class="badge" id="menuBadge">' + LANGUAGES[currentLang].menuBadge +
+                '</span>' :
+                '<i class="fas fa-bars"></i><span class="badge" id="menuBadge">' + LANGUAGES[currentLang].menuBadge +
+                '</span>';
+        }
+
+        // ============================================================
+        // 7. CESIUM 3D INIT
+        // ============================================================
+        function initCesium() {
+            Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYzQzNmFjOC1hYjg5LTRlNzItYmZiYi04YTA5NjUwMTA4NTgiLCJpZCI6Mjg1Niwic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTU0NzA3ODEzMX0.tS1t_6F3EL-7TZ7jO_lGjs6It55Dqk5Ubo3u59pjEY0';
+
+            cesiumViewer = new Cesium.Viewer('cesiumContainer', {
+                baseLayerPicker: false,
+                geocoder: false,
+                homeButton: false,
+                sceneModePicker: false,
+                navigationHelpButton: false,
+                animation: false,
+                timeline: false,
+                fullscreenButton: false,
+                infoBox: false,
+                selectionIndicator: false,
+                terrain: Cesium.Terrain.fromWorldTerrain(),
+                imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+                    url: 'https://tile.openstreetmap.org/'
+                }),
+                skyBox: false,
+                backgroundColor: Cesium.Color.fromCssColorString('#0a0e17')
+            });
+
+            const scene = cesiumViewer.scene;
+            scene.globe.enableLighting = true;
+            scene.globe.baseColor = Cesium.Color.fromCssColorString('#1a1f2e');
+            scene.backgroundColor = Cesium.Color.fromCssColorString('#0a0e17');
+
+            cesiumViewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(23.425, 49.285, 8000),
+                duration: 2
+            });
+
+            createBuildings3D();
+            createOilFields3D();
+            createMarkers3D();
+            setupCesiumPicking();
+            setupAutoRotate();
+
+            console.log('✅ Cesium 3D initialized for Boryslav');
+        }
+
+        // ============================================================
+        // 8. 3D BUILDINGS
+        // ============================================================
+        function createBuildings3D() {
+            BORYSLAV_DATA.buildings.forEach(building => {
+                const height = building.floors * 3.5;
+                const color = building.type === 'Адміністрація' ? '#fdcb6e' :
+                    building.type === 'Освіта' ? '#74b9ff' :
+                    building.type === 'Медицина' ? '#ff6b6b' :
+                    building.type === 'Культура' ? '#a29bfe' :
+                    building.type === 'Промисловість' ? '#8B4513' :
+                    building.type === 'Торгівля' ? '#81c784' :
+                    building.type === 'Історична' ? '#d4a574' : '#b0b8c4';
+
+                const entity = new Cesium.Entity({
+                    position: Cesium.Cartesian3.fromDegrees(building.coords[1], building.coords[0], height / 2),
+                    name: building.name,
+                    buildingId: building.id,
+                    type: building.type,
+                    floors: building.floors,
+                    year: building.year,
+                    condition: building.condition,
+                    wall: {
+                        positions: createBoxPositions(building.coords[1], building.coords[0], 30, 20, height),
+                        material: Cesium.Color.fromCssColorString(color)
+                    },
+                    roof: {
+                        positions: createBoxPositions(building.coords[1], building.coords[0], 30, 20, height, true),
+                        material: Cesium.Color.fromCssColorString(color)
+                    }
+                });
+                cesiumViewer.entities.add(entity);
+            });
+        }
+
+        function createBoxPositions(lon, lat, width, depth, height, roof = false) {
+            const halfW = width / 2 / 111000;
+            const halfD = depth / 2 / 111000;
+            const h = roof ? height : 0;
+            return Cesium.Cartesian3.fromDegreesArrayHeights([
+                lon - halfW, lat - halfD, h,
+                lon + halfW, lat - halfD, h,
+                lon + halfW, lat + halfD, h,
+                lon - halfW, lat + halfD, h
+            ]);
+        }
+
+        // ============================================================
+        // 9. 3D OIL FIELDS
+        // ============================================================
+        function createOilFields3D() {
+            BORYSLAV_DATA.oilFields.forEach(field => {
+                const entity = new Cesium.Entity({
+                    position: Cesium.Cartesian3.fromDegrees(field.coords[1], field.coords[0], 200),
+                    name: field.name,
+                    type: 'oil',
+                    reserves: field.reserves,
+                    status: field.status,
+                    billboard: {
+                        image: 'data:image/svg+xml,' + encodeURIComponent(
+                            `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                                <circle cx="16" cy="16" r="14" fill="#8B4513" opacity="0.4" stroke="#8B4513" stroke-width="2"/>
+                                <circle cx="16" cy="16" r="8" fill="#8B4513" opacity="0.8"/>
+                                <text x="16" y="20" font-size="14" text-anchor="middle" fill="white">🛢️</text>
+                            </svg>`
+                        ),
+                        scale: 1.2,
+                        heightReference: Cesium.HeightReference.NONE,
+                        pixelOffset: new Cesium.Cartesian2(0, -20)
+                    },
+                    label: {
+                        text: field.name,
+                        font: '12px Segoe UI, sans-serif',
+                        fillColor: Cesium.Color.WHITE,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2,
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        pixelOffset: new Cesium.Cartesian2(0, -45),
+                        showBackground: true,
+                        backgroundColor: Cesium.Color.fromCssColorString('rgba(10,14,23,0.7)'),
+                        backgroundPadding: new Cesium.Cartesian2(6, 4)
+                    }
+                });
+                cesiumViewer.entities.add(entity);
+            });
+        }
+
+        // ============================================================
+        // 10. 3D MARKERS
+        // ============================================================
+        function createMarkers3D() {
+            const categories = [
+                { data: BORYSLAV_DATA.schools, color: '#74b9ff', emoji: '🏫' },
+                { data: BORYSLAV_DATA.hospitals, color: '#ff6b6b', emoji: '🏥' },
+                { data: BORYSLAV_DATA.police, color: '#4a90d9', emoji: '👮' },
+                { data: BORYSLAV_DATA.fire, color: '#ff4444', emoji: '🚒' },
+                { data: BORYSLAV_DATA.pharmacies, color: '#2ecc71', emoji: '💊' },
+                { data: BORYSLAV_DATA.parks, color: '#81c784', emoji: '🌳' }
+            ];
+
+            categories.forEach(cat => {
+                cat.data.forEach(item => {
+                    const entity = new Cesium.Entity({
+                        position: Cesium.Cartesian3.fromDegrees(item.coords[1], item.coords[0], 100),
+                        name: item.name,
+                        type: item.type,
+                        billboard: {
+                            image: 'data:image/svg+xml,' + encodeURIComponent(
+                                `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                                    <circle cx="14" cy="14" r="12" fill="${cat.color}" opacity="0.3" stroke="${cat.color}" stroke-width="2"/>
+                                    <circle cx="14" cy="14" r="7" fill="${cat.color}" opacity="0.8"/>
+                                    <text x="14" y="17" font-size="12" text-anchor="middle" fill="white">${cat.emoji}</text>
+                                </svg>`
+                            ),
+                            scale: 1.0,
+                            heightReference: Cesium.HeightReference.NONE,
+                            pixelOffset: new Cesium.Cartesian2(0, -15)
+                        },
+                        label: {
+                            text: item.name,
+                            font: '11px Segoe UI, sans-serif',
+                            fillColor: Cesium.Color.WHITE,
+                            outlineColor: Cesium.Color.BLACK,
+                            outlineWidth: 2,
+                            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                            pixelOffset: new Cesium.Cartesian2(0, -35),
+                            showBackground: true,
+                            backgroundColor: Cesium.Color.fromCssColorString('rgba(10,14,23,0.7)'),
+                            backgroundPadding: new Cesium.Cartesian2(6, 4)
+                        }
+                    });
+                    cesiumViewer.entities.add(entity);
+                });
+            });
+        }
+
+        // ============================================================
+        // 11. 3D PICKING
+        // ============================================================
+        function setupCesiumPicking() {
+            const handler = new Cesium.ScreenSpaceEventHandler(cesiumViewer.scene.canvas);
+            handler.setInputAction(function(click) {
+                const picked = cesiumViewer.scene.pick(click.position);
+                if (Cesium.defined(picked) && picked.primitive) {
+                    const id = picked.primitive._id || picked.primitive.id;
+                    if (id && id.buildingId) {
+                        showInfoPanel3D(id);
+                        return;
+                    }
+                }
+                document.getElementById('infoPanel').classList.remove('visible');
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+            handler.setInputAction(function(move) {
+                const picked = cesiumViewer.scene.pick(move.endPosition);
+                cesiumViewer.scene.canvas.style.cursor =
+                    Cesium.defined(picked) && picked.primitive ? 'pointer' : 'default';
+            }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+        }
+
+        function showInfoPanel3D(data) {
+            const panel = document.getElementById('infoPanel');
+            document.getElementById('infoTitle').textContent = data.name || 'Об\'єкт';
+            document.getElementById('infoSub').textContent = '🏷️ ' + (data.type || 'Об\'єкт') +
+                (data.year ? ' · ' + data.year : '');
+            let detail =
+                `<i class="fas fa-map-pin"></i> ${data.buildingId || '—'}<br>`;
+            if (data.floors) detail +=
+                `<i class="fas fa-layer-group"></i> Поверхи: ${data.floors}<br>`;
+            if (data.condition) detail +=
+                `<i class="fas fa-info-circle"></i> Стан: ${data.condition}<br>`;
+            if (data.reserves) detail +=
+                `<i class="fas fa-oil-can"></i> Запаси: ${data.reserves}`;
+            document.getElementById('infoDetail').innerHTML = detail;
+            document.getElementById('infoCoords').textContent = '—';
+            panel.classList.add('visible');
+        }
+
+        // ============================================================
+        // 12. AUTO ROTATE
+        // ============================================================
+        function setupAutoRotate() {
+            document.getElementById('btnAutoRotate').addEventListener('click', function() {
+                autoRotate = !autoRotate;
+                this.classList.toggle('active');
+                if (autoRotate) startAutoRotate();
+            });
+        }
+
+        function startAutoRotate() {
+            function step() {
+                if (!autoRotate) return;
+                const camera = cesiumViewer.camera;
+                const position = camera.position;
+                const center = Cesium.Cartesian3.fromDegrees(23.425, 49.285, 0);
+                const radius = Cesium.Cartesian3.distance(position, center);
+                if (radius > 100) {
+                    const heading = camera.heading + 0.005;
+                    camera.lookAt(center, new Cesium.Cartesian3(
+                        radius * Math.sin(heading),
+                        radius * Math.cos(heading),
+                        camera.position.z
+                    ));
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // ============================================================
+        // 13. LEAFLET 2D INIT
+        // ============================================================
+        function initLeaflet() {
+            leafletMap = L.map('leafletContainer', {
+                center: BORYSLAV_DATA.center,
+                zoom: BORYSLAV_DATA.zoom,
+                zoomControl: false,
+                attributionControl: true
+            });
+            loadProvider('osm');
+            setupBoryslavLayers();
+            addBoryslavData();
+
+            leafletMap.on('click', function(e) {
+                updateCoords(e.latlng);
+            });
+            leafletMap.on('move', function() {
+                updateCoords(leafletMap.getCenter());
+            });
+            updateCoords(leafletMap.getCenter());
+            console.log('✅ Leaflet 2D initialized for Boryslav');
+        }
+
+        // ============================================================
+        // 14. LOAD PROVIDER
+        // ============================================================
+        function loadProvider(providerId) {
+            const providers = {
+                osm: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', name: 'OpenStreetMap' },
+                cartodb: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                    name: 'CartoDB Dark' },
+                google: { url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', name: 'Google Maps' },
+                yandex: { url: 'https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}',
+                    name: 'Yandex Maps' },
+                stadiamaps: { url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+                    name: 'Stadia Maps' },
+                cyclosm: { url: 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+                    name: 'CyclOSM' },
+                opentopomap: { url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', name: 'OpenTopoMap' },
+                arcgis: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    name: 'ArcGIS Satellite' }
+            };
+
+            const provider = providers[providerId];
+            if (!provider) return;
+            if (baseLayer) leafletMap.removeLayer(baseLayer);
+            baseLayer = L.tileLayer(provider.url, {
+                maxZoom: 19,
+                attribution: provider.name,
+                subdomains: 'abcd'
+            }).addTo(leafletMap);
+            currentProvider = providerId;
+            document.getElementById('providerDisplay').textContent = provider.name;
+            document.getElementById('layerDisplay').textContent = 'Стандартна';
+            document.getElementById('layerCount').textContent = '12';
+            document.getElementById('providerSelect').value = providerId;
+            if (menuOpen) toggleMenu();
+        }
+
+        function setMapType(type) {
+            const types = {
+                standard: 'osm',
+                topo: 'opentopomap',
+                satellite: 'arcgis'
+            };
+            const providerId = types[type] || 'osm';
+            loadProvider(providerId);
+            document.querySelectorAll('[data-type]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+        }
+
+        function switchProvider(providerId) {
+            loadProvider(providerId);
+        }
+
+        // ============================================================
+        // 15. BORYSLAV LAYERS
+        // ============================================================
+        function setupBoryslavLayers() {
+            // Buildings
+            layerGroups.buildings = L.geoJSON(null, {
+                style: { color: '#fdcb6e', weight: 2, fillOpacity: 0.6 },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup(`
+                        <b>${feature.properties.name}</b><br>
+                        <span data-key="type">Тип</span>: ${feature.properties.type}<br>
+                        <span data-key="floors">Поверхи</span>: ${feature.properties.floors}<br>
+                        <span data-key="year">Рік</span>: ${feature.properties.year}<br>
+                        <span data-key="condition">Стан</span>: ${feature.properties.condition}
+                    `);
+                }
+            });
+
+            // Roads
+            layerGroups.roads = L.layerGroup();
+            BORYSLAV_DATA.roads.forEach(road => {
+                const color = road.type === 'main' ? '#74b9ff' : '#a29bfe';
+                const polyline = L.polyline(road.coords, { color: color, weight: road.type === 'main' ? 4 : 2 });
+                polyline.bindPopup(`<b>${road.name}</b>`);
+                layerGroups.roads.addLayer(polyline);
+            });
+
+            // Water
+            layerGroups.water = L.layerGroup();
+            BORYSLAV_DATA.water.forEach(water => {
+                if (water.type === 'river') {
+                    const polyline = L.polyline(water.coords, { color: '#2196F3', weight: 3 });
+                    polyline.bindPopup(`<b>${water.name}</b>`);
+                    layerGroups.water.addLayer(polyline);
+                } else {
+                    const circle = L.circle(water.coords, {
+                        radius: 150,
+                        color: '#2196F3',
+                        fillColor: '#2196F3',
+                        fillOpacity: 0.5
+                    });
+                    circle.bindPopup(`<b>${water.name}</b>`);
+                    layerGroups.water.addLayer(circle);
+                }
+            });
+
+            // Green zones
+            layerGroups.green = L.layerGroup();
+            BORYSLAV_DATA.green.forEach(green => {
+                const circle = L.circle(green.coords, {
+                    radius: green.type === 'park' ? 200 : green.type === 'square' ? 80 : 500,
+                    color: '#81c784',
+                    fillColor: '#81c784',
+                    fillOpacity: 0.3
+                });
+                circle.bindPopup(`<b>${green.name}</b><br><span data-key="type">Тип</span>: ${green.type}`);
+                layerGroups.green.addLayer(circle);
+            });
+
+            // Infrastructure
+            const infraColors = {
+                waterSupply: '#4fc3f7',
+                gas: '#ff6b6b',
+                electricity: '#ffd700',
+                heating: '#ff6b6b'
+            };
+
+            ['waterSupply', 'gas', 'electricity', 'heating'].forEach(key => {
+                layerGroups[key] = L.layerGroup();
+                BORYSLAV_DATA[key].forEach(item => {
+                    const polyline = L.polyline(item.coords, {
+                        color: infraColors[key],
+                        weight: 2,
+                        dashArray: '5,5'
+                    });
+                    polyline.bindPopup(`<b>${item.name}</b>`);
+                    layerGroups[key].addLayer(polyline);
+                });
+            });
+
+            // Oil fields
+            layerGroups.oil = L.layerGroup();
+            BORYSLAV_DATA.oilFields.forEach(field => {
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="background:#8B4513;width:20px;height:20px;border-radius:50%;border:3px solid #fdcb6e;display:flex;align-items:center;justify-content:center;">🛢️</div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                const marker = L.marker(field.coords, { icon })
+                    .bindPopup(`
+                        <b>${field.name}</b><br>
+                        <span data-key="status">Статус</span>: ${field.status}<br>
+                        <span data-key="reserves">Запаси</span>: ${field.reserves}
+                    `);
+                layerGroups.oil.addLayer(marker);
+            });
+
+            // Ozokerite
+            layerGroups.ozokerite = L.layerGroup();
+            BORYSLAV_DATA.ozokerite.forEach(item => {
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="background:#D4A574;width:18px;height:18px;border-radius:50%;border:3px solid #fdcb6e;display:flex;align-items:center;justify-content:center;">💎</div>`,
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9]
+                });
+                const marker = L.marker(item.coords, { icon })
+                    .bindPopup(`
+                        <b>${item.name}</b><br>
+                        <span data-key="status">Статус</span>: ${item.status}<br>
+                        <span data-key="reserves">Запаси</span>: ${item.reserves}
+                    `);
+                layerGroups.ozokerite.addLayer(marker);
+            });
+
+            // Mines
+            layerGroups.mines = L.layerGroup();
+            BORYSLAV_DATA.mines.forEach(mine => {
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="background:#a0522d;width:18px;height:18px;border-radius:50%;border:3px solid #fdcb6e;display:flex;align-items:center;justify-content:center;">⛏️</div>`,
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9]
+                });
+                const marker = L.marker(mine.coords, { icon })
+                    .bindPopup(`
+                        <b>${mine.name}</b><br>
+                        <span data-key="depth">Глибина</span>: ${mine.depth} м<br>
+                        <span data-key="status">Статус</span>: ${mine.status}
+                    `);
+                layerGroups.mines.addLayer(marker);
+            });
+
+            // Karst
+            layerGroups.karst = L.layerGroup();
+            BORYSLAV_DATA.karst.forEach(item => {
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="background:#c0392b;width:16px;height:16px;border-radius:50%;border:3px solid #ff6b6b;display:flex;align-items:center;justify-content:center;">⚠️</div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+                const marker = L.marker(item.coords, { icon })
+                    .bindPopup(`
+                        <b>${item.name}</b><br>
+                        <span data-key="depth">Глибина</span>: ${item.depth} м<br>
+                        <span data-key="risk">Ризик</span>: ${item.risk}
+                    `);
+                layerGroups.karst.addLayer(marker);
+            });
+
+            // Social infrastructure
+            const socialIcons = {
+                schools: { emoji: '🏫', color: '#74b9ff' },
+                hospitals: { emoji: '🏥', color: '#ff6b6b' },
+                police: { emoji: '👮', color: '#4a90d9' },
+                fire: { emoji: '🚒', color: '#ff4444' },
+                pharmacies: { emoji: '💊', color: '#2ecc71' },
+                parks: { emoji: '🌳', color: '#81c784' }
+            };
+
+            Object.keys(socialIcons).forEach(key => {
+                layerGroups[key] = L.layerGroup();
+                BORYSLAV_DATA[key].forEach(item => {
+                    const icon = L.divIcon({
+                        className: '',
+                        html: `<div style="background:${socialIcons[key].color};width:28px;height:28px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">${socialIcons[key].emoji}</div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14]
+                    });
+                    const marker = L.marker(item.coords, { icon })
+                        .bindPopup(`
+                            <b>${item.name}</b><br>
+                            <span data-key="type">Тип</span>: ${item.type}
+                            ${item.students ? '<br>👨‍🎓 ' + item.students : ''}
+                            ${item.children ? '<br>👶 ' + item.children : ''}
+                            ${item.beds ? '<br>🛏️ ' + item.beds : ''}
+                        `);
+                    layerGroups[key].addLayer(marker);
+                });
+            });
+
+            // Add all layers to map
+            Object.keys(layerGroups).forEach(key => {
+                if (key !== 'buildings' && key !== 'roads') {
+                    layerGroups[key].addTo(leafletMap);
+                }
+            });
+            layerGroups.buildings.addTo(leafletMap);
+            layerGroups.roads.addTo(leafletMap);
+
+            // Enable default layers
+            document.getElementById('layerBuildings').checked = true;
+            document.getElementById('layerRoads').checked = true;
+        }
+
+        // ============================================================
+        // 16. ADD BORYSLAV DATA (Buildings as GeoJSON)
+        // ============================================================
+        function addBoryslavData() {
+            const buildingsGeoJSON = {
+                type: 'FeatureCollection',
+                features: BORYSLAV_DATA.buildings.map(b => ({
+                    type: 'Feature',
+                    properties: {
+                        name: b.name,
+                        type: b.type,
+                        floors: b.floors,
+                        year: b.year,
+                        condition: b.condition
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [b.coords[1], b.coords[0]]
+                    }
+                }))
+            };
+            layerGroups.buildings.addData(buildingsGeoJSON);
+        }
+
+        // ============================================================
+        // 17. TOGGLE LAYERS
+        // ============================================================
+        function toggleLayer(layerKey) {
+            const checkbox = document.getElementById('layer' + layerKey.charAt(0).toUpperCase() + layerKey.slice(1));
+            if (!checkbox) return;
+            const checked = checkbox.checked;
+            const layer = layerGroups[layerKey];
+            if (!layer) {
+                console.warn('Layer not found:', layerKey);
+                return;
+            }
+            if (checked) {
+                layer.addTo(leafletMap);
+                notify(LANGUAGES[currentLang][layerKey] + ' on', 'info');
+            } else {
+                leafletMap.removeLayer(layer);
+                notify(LANGUAGES[currentLang][layerKey] + ' off', 'warning');
+            }
+            document.getElementById('layerCount').textContent = document.querySelectorAll('.switch input:checked').length + 3;
+        }
+
+        // ============================================================
+        // 18. FLY TO CATEGORY
+        // ============================================================
+        function flyToCategory(category) {
+            const data = BORYSLAV_DATA[category];
+            if (!data || data.length === 0) {
+                notify('No data found for category: ' + category, 'error');
+                return;
+            }
+
+            let lat = 0,
+                lon = 0;
+            data.forEach(item => {
+                lat += item.coords[0];
+                lon += item.coords[1];
+            });
+            lat /= data.length;
+            lon /= data.length;
+
+            if (currentView === '3d' && cesiumViewer) {
+                cesiumViewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(lon, lat, 1500),
+                    duration: 2
+                });
+            } else if (currentView === '2d' && leafletMap) {
+                leafletMap.flyTo([lat, lon], 15);
+            }
+
+            const layerMap = {
+                'schools': 'schools',
+                'hospitals': 'hospitals',
+                'police': 'police',
+                'fire': 'fire',
+                'pharmacies': 'pharmacies',
+                'parks': 'parks'
+            };
+            const layerKey = layerMap[category];
+            if (layerKey) {
+                const checkbox = document.getElementById('layer' + layerKey.charAt(0).toUpperCase() + layerKey.slice(1));
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    toggleLayer(layerKey);
+                }
+            }
+
+            notify('🏷️ ' + LANGUAGES[currentLang][category] + ': ' + data.length + ' ' + LANGUAGES[currentLang][
+                'objects'], 'success');
+            if (menuOpen) toggleMenu();
+        }
+
+        // ============================================================
+        // 19. COORDINATES UPDATE
+        // ============================================================
+        function updateCoords(coords) {
+            document.getElementById('coordDisplay').textContent =
+                `📍 ${coords.lat.toFixed(5)}°, ${coords.lng.toFixed(5)}°`;
+        }
+
+        // ============================================================
+        // 20. SWITCH VIEW
+        // ============================================================
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('view3D').classList.toggle('active', view === '3d');
+            document.getElementById('view2D').classList.toggle('active', view === '2d');
+            const cesiumContainer = document.getElementById('cesiumContainer');
+            const leafletContainer = document.getElementById('leafletContainer');
+            if (view === '3d') {
+                cesiumContainer.style.display = 'block';
+                leafletContainer.style.display = 'none';
+                if (cesiumViewer) {
+                    cesiumViewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(23.425, 49.285, 8000),
+                        duration: 1
+                    });
+                }
+            } else {
+                cesiumContainer.style.display = 'none';
+                leafletContainer.style.display = 'block';
+                setTimeout(() => {
+                    if (leafletMap) { leafletMap.invalidateSize();
+                        leafletMap.flyTo(BORYSLAV_DATA.center, BORYSLAV_DATA.zoom); }
+                }, 100);
+            }
+            if (menuOpen) toggleMenu();
+        }
+
+        // ============================================================
+        // 21. LOCATE USER
+        // ============================================================
+        function locateUser() {
+            if (!navigator.geolocation) { notify('Geolocation not supported', 'error'); return; }
+            notify('Locating...', 'info');
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const coords = [pos.coords.latitude, pos.coords.longitude];
+                    if (userMarker && leafletMap) leafletMap.removeLayer(userMarker);
+                    if (currentView === '3d' && cesiumViewer) {
+                        cesiumViewer.camera.flyTo({
+                            destination: Cesium.Cartesian3.fromDegrees(pos.coords.longitude, pos.coords
+                                .latitude, 500),
+                            duration: 1
+                        });
+                        document.getElementById('gpsStatus').innerHTML = '● GPS ▲';
+                        notify('Location found', 'success');
+                    } else if (currentView === '2d' && leafletMap) {
+                        const icon = L.divIcon({
+                            className: '',
+                            html: `<div style="width:24px;height:24px;background:#4fc3f7;border-radius:50%;border:3px solid white;box-shadow:0 0 20px #4fc3f7;"></div>`,
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+                        userMarker = L.marker(coords, { icon })
+                            .addTo(leafletMap)
+                            .bindPopup('<b>📍 Ви тут</b>')
+                            .openPopup();
+                        leafletMap.flyTo(coords, 10);
+                        document.getElementById('gpsStatus').innerHTML = '● GPS ▲';
+                        notify('Location found', 'success');
+                    }
+                    if (menuOpen) toggleMenu();
+                },
+                function(err) {
+                    const messages = { 1: 'Доступ заборонено', 2: 'Сигнал недоступний', 3: 'Таймаут' };
+                    notify('GPS: ' + (messages[err.code] || 'Помилка'), 'error');
+                    document.getElementById('gpsStatus').innerHTML = '● GPS ✕';
+                }, { enableHighAccuracy: true, timeout: 8000 }
+            );
+        }
+
+        // ============================================================
+        // 22. FULLSCREEN
+        // ============================================================
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen?.() || document.documentElement.webkitRequestFullscreen?.();
+                notify('Fullscreen mode', 'success');
+            } else {
+                document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+                notify('Exited fullscreen', 'info');
+            }
+            if (menuOpen) toggleMenu();
+        }
+
+        // ============================================================
+        // 23. GENERATE REPORT
+        // ============================================================
+        function generateReport() {
+            const report = {
+                city: 'Борислав',
+                date: new Date().toLocaleDateString('uk-UA'),
+                buildings: BORYSLAV_DATA.buildings.length,
+                oilFields: BORYSLAV_DATA.oilFields.length,
+                ozokerite: BORYSLAV_DATA.ozokerite.length,
+                mines: BORYSLAV_DATA.mines.length,
+                schools: BORYSLAV_DATA.schools.length,
+                hospitals: BORYSLAV_DATA.hospitals.length,
+                temp: document.getElementById('kpi-temp').textContent,
+                oilProduction: document.getElementById('kpi-oil').textContent,
+                incidents: document.getElementById('kpi-incidents').textContent
+            };
+
+            const text = `
+        📋 ЗВІТ ПРО СТАН БОРИСЛАВА
+        ${'='.repeat(40)}
+
+        🏙️ Місто: ${report.city}
+        📅 Дата: ${report.date}
+
+        📊 СТАТИСТИКА:
+        🏗️ Будівлі: ${report.buildings}
+        🛢️ Нафтові родовища: ${report.oilFields}
+        💎 Озокерит: ${report.ozokerite}
+        ⛏️ Шахти: ${report.mines}
+        🏫 Школи: ${report.schools}
+        🏥 Лікарні: ${report.hospitals}
+
+        🌡️ ПОКАЗНИКИ:
+        🌡️ Температура: ${report.temp}°C
+        🛢️ Видобуток нафти: ${report.oilProduction} т/міс
+        ⚠️ Інциденти: ${report.incidents}
+
+        ${'='.repeat(40)}
+        🔄 Дані оновлено в реальному часі
+        🛡️ Герб Борислава — символ міста
+                    `;
+
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `boryslav_report_${new Date().toISOString().slice(0,10)}.txt`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+
+            notify('📄 Звіт згенеровано', 'success');
+            if (menuOpen) toggleMenu();
+        }
+
+        // ============================================================
+        // 24. NOTIFICATIONS
+        // ============================================================
+        function notify(msg, type = 'info') {
+            const colors = { info: '#fdcb6e', success: '#81c784', warning: '#ffb74d', error: '#ef5350' };
+            const el = document.createElement('div');
+            el.className = 'notification';
+            el.style.borderLeftColor = colors[type] || colors.info;
+            el.innerHTML = `<div class="title">${type.toUpperCase()}</div><div>${msg}</div>`;
+            document.body.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.4s';
+                setTimeout(() => el.remove(), 400);
+            }, 2500);
+        }
+
+        // ============================================================
+        // 25. CONTROLS SETUP
+        // ============================================================
+        function setupControls() {
+            document.getElementById('btnZoomIn').addEventListener('click', function() {
+                if (currentView === '3d' && cesiumViewer) {
+                    const camera = cesiumViewer.camera;
+                    const pos = camera.position;
+                    const center = Cesium.Cartesian3.fromDegrees(23.425, 49.285, 0);
+                    const newPos = Cesium.Cartesian3.lerp(pos, center, 0.1, new Cesium.Cartesian3());
+                    camera.flyTo({ destination: newPos, duration: 0.5 });
+                } else if (currentView === '2d' && leafletMap) leafletMap.zoomIn();
+            });
+            document.getElementById('btnZoomOut').addEventListener('click', function() {
+                if (currentView === '3d' && cesiumViewer) {
+                    const camera = cesiumViewer.camera;
+                    const pos = camera.position;
+                    const center = Cesium.Cartesian3.fromDegrees(23.425, 49.285, 0);
+                    const dir = Cesium.Cartesian3.subtract(pos, center, new Cesium.Cartesian3());
+                    const newPos = Cesium.Cartesian3.add(pos, dir, new Cesium.Cartesian3());
+                    camera.flyTo({ destination: newPos, duration: 0.5 });
+                } else if (currentView === '2d' && leafletMap) leafletMap.zoomOut();
+            });
+            document.getElementById('btnReset').addEventListener('click', function() {
+                if (currentView === '3d' && cesiumViewer) {
+                    cesiumViewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(23.425, 49.285, 8000),
+                        duration: 1
+                    });
+                } else if (currentView === '2d' && leafletMap) leafletMap.flyTo(BORYSLAV_DATA.center, BORYSLAV_DATA
+                    .zoom);
+                document.getElementById('infoPanel').classList.remove('visible');
+                notify('View reset', 'info');
+            });
+            document.getElementById('btnLocation').addEventListener('click', locateUser);
+            document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+        }
+
+        // ============================================================
+        // 26. MINI CHART
+        // ============================================================
+        function initMiniChart() {
+            const ctx = document.getElementById('miniChart').getContext('2d');
+            const data = [];
+            for (let i = 0; i < 24; i++) {
+                const base = 35 + Math.sin(i / 6) * 15;
+                data.push(Math.max(15, Math.min(90, base + (Math.random() - 0.5) * 15)));
+            }
+            miniChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: 'AQI',
+                        data: data,
+                        borderColor: '#fdcb6e',
+                        backgroundColor: 'rgba(253, 203, 110, 0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { display: false } },
+                        y: { grid: { display: false }, ticks: { display: false }, min: 0, max: 100 }
+                    },
+                    animation: { duration: 500 }
+                }
+            });
+        }
+
+        // ============================================================
+        // 27. UPDATE KPI
+        // ============================================================
+        function updateKPI() {
+            const temp = (22 + Math.random() * 4).toFixed(1);
+            document.getElementById('kpi-temp').textContent = temp;
+            const aqi = Math.floor(30 + Math.random() * 30);
+            document.getElementById('kpi-aqi').textContent = aqi;
+            document.getElementById('kpi-aqi-trend').textContent = Math.random() > 0.5 ? '↑' : '↓';
+            document.getElementById('kpi-aqi-trend').className = 'trend ' + (Math.random() > 0.5 ? 'up' : 'down');
+
+            const oil = Math.floor(1800 + Math.random() * 1000);
+            document.getElementById('kpi-oil').textContent = oil.toLocaleString();
+            document.getElementById('kpi-oil-trend').textContent = Math.random() > 0.5 ? '↑' : '↓';
+            document.getElementById('kpi-oil-trend').className = 'trend ' + (Math.random() > 0.5 ? 'up' : 'down');
+
+            const ozokerite = Math.floor(140 + Math.random() * 80);
+            document.getElementById('kpi-ozokerite').textContent = ozokerite;
+            document.getElementById('kpi-ozokerite-trend').textContent = Math.random() > 0.5 ? '↑' : '↓';
+            document.getElementById('kpi-ozokerite-trend').className = 'trend ' + (Math.random() > 0.5 ? 'up' : 'down');
+
+            const water = (4.2 + Math.random() * 1.2).toFixed(1);
+            document.getElementById('kpi-water').textContent = water;
+
+            const incidents = Math.floor(Math.random() * 5);
+            document.getElementById('kpi-incidents').textContent = incidents;
+            document.getElementById('kpi-incidents-trend').textContent = Math.random() > 0.5 ? '↑' : '↓';
+            document.getElementById('kpi-incidents-trend').className = 'trend ' + (Math.random() > 0.5 ? 'up' : 'down');
+
+            const tourists = Math.floor(800 + Math.random() * 800);
+            document.getElementById('kpi-tourists').textContent = tourists.toLocaleString();
+            document.getElementById('kpi-tourists-trend').textContent = Math.random() > 0.5 ? '↑' : '↓';
+            document.getElementById('kpi-tourists-trend').className = 'trend ' + (Math.random() > 0.5 ? 'up' : 'down');
+
+            if (miniChart) {
+                const newData = miniChart.data.datasets[0].data;
+                newData.shift();
+                const base = 35 + Math.sin(Date.now() / 60000) * 15;
+                newData.push(Math.max(15, Math.min(90, base + (Math.random() - 0.5) * 15)));
+                miniChart.update();
+            }
+        }
+
+        // ============================================================
+        // 28. INIT
+        // ============================================================
+        function init() {
+            initCesium();
+            initLeaflet();
+            initMiniChart();
+            setupControls();
+            setInterval(updateKPI, 3000);
+            document.getElementById('leafletContainer').style.display = 'none';
+
+            window.flyToCategory = flyToCategory;
+            window.switchView = switchView;
+            window.locateUser = locateUser;
+            window.toggleFullscreen = toggleFullscreen;
+            window.toggleMenu = toggleMenu;
+            window.setMapType = setMapType;
+            window.switchProvider = switchProvider;
+            window.toggleLayer = toggleLayer;
+            window.switchLanguage = switchLanguage;
+            window.generateReport = generateReport;
+            window.showCoatInfo = showCoatInfo;
+            window.notify = notify;
+
+            console.log('🚀 Цифровий двійник Борислава запущено!');
+            console.log('🛡️ Герб Борислава інтегровано');
+            console.log('📍 2D та 3D режими доступні');
+            console.log('🏗️ 10 будівель, 5 доріг, 2 водойми');
+            console.log('🛢️ 3 нафтові родовища, 2 озокеритові');
+            console.log('⛏️ 3 шахти, 2 карстові пустоти');
+
+            setTimeout(() => {
+                const panel = document.getElementById('infoPanel');
+                panel.classList.add('visible');
+                document.getElementById('infoTitle').textContent = '🛡️ Ласкаво просимо!';
+                document.getElementById('infoSub').textContent = 'Цифровий двійник Борислава';
+                document.getElementById('infoDetail').innerHTML = `
+                    <i class="fas fa-shield-alt"></i> Герб Борислава — символ міста<br>
+                    <i class="fas fa-cube"></i> 3D — огляд міста<br>
+                    <i class="fas fa-map"></i> 2D — детальна карта<br>
+                    <i class="fas fa-oil-can"></i> Нафтові родовища Борислава<br>
+                    <i class="fas fa-gem"></i> Озокерит — унікальний ресурс<br>
+                    <i class="fas fa-building"></i> ${BORYSLAV_DATA.buildings.length} будівель<br>
+                    <i class="fas fa-bars"></i> Меню для керування шарами
+                `;
+                document.getElementById('infoCoords').textContent = 'Борислав, Україна';
+                setTimeout(() => { panel.classList.remove('visible'); }, 6000);
+            }, 1500);
+        }
+
+        // ============================================================
+        // 29. START
+        // ============================================================
+        window.onload = function() { setTimeout(init, 500); };
+        window.onbeforeunload = function() { if (cesiumViewer) cesiumViewer.destroy(); };
+        console.log('📦 Завантаження Цифрового двійника Борислава...');
+    </script>
+</body>
+</html>
