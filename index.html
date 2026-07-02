@@ -89,6 +89,28 @@
             background: rgba(10, 14, 23, 0.95) !important;
         }
 
+        /* ===== COAT OF ARMS (Новий герб Борислава) ===== */
+        .coat-of-arms {
+            position: absolute;
+            bottom: 90px;
+            right: 20px;
+            z-index: 999;
+            width: 100px;
+            height: 120px;
+            opacity: 0.85;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+        }
+        .coat-of-arms:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .coat-of-arms svg {
+            width: 100%;
+            height: 100%;
+        }
+
         /* ===== TOP BAR ===== */
         .top-bar {
             position: absolute;
@@ -120,7 +142,7 @@
         }
         .top-bar .logo .coatsmall {
             width: 48px;
-            height: 60px;
+            height: 58px;
             opacity: 0.95;
             flex-shrink: 0;
         }
@@ -698,6 +720,12 @@
                 width: 340px;
                 left: -360px;
             }
+            .coat-of-arms {
+                width: 72px;
+                height: 86px;
+                bottom: 80px;
+                right: 12px;
+            }
         }
         @media (max-width: 768px) {
             .top-bar {
@@ -707,7 +735,7 @@
             }
             .top-bar .logo .coatsmall {
                 width: 32px;
-                height: 40px;
+                height: 38px;
             }
             .top-bar .logo h1 {
                 font-size: 17px;
@@ -773,11 +801,17 @@
                 font-size: 9px;
                 padding: 4px 12px;
             }
+            .coat-of-arms {
+                width: 50px;
+                height: 60px;
+                bottom: 68px;
+                right: 8px;
+            }
         }
         @media (max-width: 480px) {
             .top-bar .logo .coatsmall {
                 width: 24px;
-                height: 30px;
+                height: 28px;
             }
             .top-bar .logo h1 {
                 font-size: 13px;
@@ -822,6 +856,12 @@
                 padding: 6px 10px;
                 font-size: 14px;
             }
+            .coat-of-arms {
+                width: 38px;
+                height: 46px;
+                bottom: 60px;
+                right: 4px;
+            }
         }
     </style>
 </head>
@@ -833,32 +873,146 @@
     <!-- ===== 2D CONTAINER ===== -->
     <div id="leafletContainer"></div>
 
+    <!-- ===== COAT OF ARMS (Новий герб Борислава) ===== -->
+    <div class="coat-of-arms" id="coatOfArms" title="Герб Борислава" onclick="showCoatInfo()">
+        <svg viewBox="0 0 420 480" xmlns="http://www.w3.org/2000/svg">
+            <!-- Геральдическое поле — скошенное (Австро-Венгрия) -->
+            <clipPath id="shieldClip">
+                <path d="M210,20 C280,40 400,80 400,200 C400,340 300,440 210,460 C120,440 20,340 20,200 C20,80 140,40 210,20Z"/>
+            </clipPath>
+            <g clip-path="url(#shieldClip)">
+                <rect width="420" height="480" fill="#f0e4d0"/>
+                <polygon points="0,0 420,0 420,480 0,480" fill="url(#fieldGrad)"/>
+                <defs>
+                    <linearGradient id="fieldGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#1a3d7a"/>
+                        <stop offset="50%" stop-color="#1a3d7a"/>
+                        <stop offset="50%" stop-color="#b31b1b"/>
+                        <stop offset="100%" stop-color="#b31b1b"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- Солнечные знаки -->
+                <text x="50" y="80" font-size="48" fill="#f7d44a" opacity="0.5" transform="rotate(-15,50,80)">☀︎</text>
+                <text x="320" y="400" font-size="54" fill="#f7d44a" opacity="0.5" transform="rotate(25,320,400)">☀︎</text>
+
+                <!-- Солнечное колесо -->
+                <circle cx="340" cy="100" r="28" fill="none" stroke="#f7d44a" stroke-width="4" opacity="0.4"/>
+                <circle cx="340" cy="100" r="6" fill="#f7d44a" opacity="0.4"/>
+
+                <!-- Неолитический крест -->
+                <circle cx="60" cy="400" r="26" fill="none" stroke="#f7d44a" stroke-width="3" opacity="0.3"/>
+                <text x="50" y="418" font-size="36" fill="#f7d44a" opacity="0.3" text-anchor="middle">✚</text>
+
+                <!-- Соляной мегалит -->
+                <rect x="175" y="120" width="70" height="220" rx="8" fill="url(#stoneGrad)" stroke="#a09888" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="stoneGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#e8e0d0"/>
+                        <stop offset="50%" stop-color="#c8c0b0"/>
+                        <stop offset="100%" stop-color="#b8b0a0"/>
+                    </linearGradient>
+                </defs>
+                <!-- Верх мегалита -->
+                <rect x="160" y="100" width="100" height="24" rx="12" fill="#d8d0c0" stroke="#b0a898" stroke-width="1"/>
+                <!-- Кристаллы соли -->
+                <polygon points="170,180 185,165 200,180 185,195" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
+                <polygon points="215,230 228,218 241,230 228,242" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
+                <polygon points="163,290 182,272 201,290 182,308" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
+                <polygon points="215,140 226,132 237,140 226,148" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
+                <!-- Текст на мегалите -->
+                <text x="210" y="310" font-size="16" fill="#8a7a6a" opacity="0.4" text-anchor="middle" letter-spacing="4">✧ ✧ ✧</text>
+
+                <!-- Капли нефти -->
+                <ellipse cx="140" cy="100" rx="12" ry="16" fill="#1f1f1f" opacity="0.7" transform="rotate(20,140,100)"/>
+                <ellipse cx="280" cy="130" rx="10" ry="14" fill="#1f1f1f" opacity="0.7" transform="rotate(-15,280,130)"/>
+                <ellipse cx="140" cy="360" rx="14" ry="20" fill="#1f1f1f" opacity="0.7" transform="rotate(35,140,360)"/>
+                <ellipse cx="300" cy="380" rx="11" ry="15" fill="#1f1f1f" opacity="0.7" transform="rotate(-30,300,380)"/>
+
+                <!-- Кристаллы озокерита -->
+                <polygon points="120,230 135,215 150,230 135,245" fill="#f7d44a" opacity="0.6" stroke="#b38f2e" stroke-width="1"/>
+                <polygon points="290,250 302,238 314,250 302,262" fill="#f7d44a" opacity="0.6" stroke="#b38f2e" stroke-width="1"/>
+                <polygon points="115,320 128,306 141,320 128,334" fill="#f7d44a" opacity="0.6" stroke="#b38f2e" stroke-width="1"/>
+
+                <!-- Молот и кирка -->
+                <g transform="translate(300,200) scale(0.5)" opacity="0.4">
+                    <rect x="10" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(30,15,45)"/>
+                    <rect x="4" y="5" width="22" height="12" rx="4" fill="#3d3d3d"/>
+                    <rect x="40" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(-40,45,45)"/>
+                    <ellipse cx="40" cy="7" rx="14" ry="6" fill="#3d3d3d"/>
+                    <ellipse cx="56" cy="83" rx="8" ry="6" fill="#3d3d3d"/>
+                </g>
+
+                <!-- Торговые весы -->
+                <text x="320" y="140" font-size="40" opacity="0.5">⚖️</text>
+
+                <!-- Корона -->
+                <g transform="translate(210,20)">
+                    <polygon points="-45,20 -35,2 -25,14 -15,0 -5,14 5,0 15,14 25,2 35,20 30,30 -30,30" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
+                    <circle cx="-20" cy="12" r="3" fill="#d43f3f"/>
+                    <circle cx="0" cy="10" r="3" fill="#d43f3f"/>
+                    <circle cx="20" cy="12" r="3" fill="#d43f3f"/>
+                    <path d="M-35,25 L35,25 L30,35 L-30,35 Z" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
+                    <rect x="-30" y="30" width="8" height="6" fill="#b38f2e"/>
+                    <rect x="-10" y="30" width="8" height="6" fill="#b38f2e"/>
+                    <rect x="10" y="30" width="8" height="6" fill="#b38f2e"/>
+                    <circle cx="0" cy="4" r="4" fill="#d43f3f" stroke="#8a2a2a" stroke-width="1"/>
+                </g>
+            </g>
+        </svg>
+    </div>
+
     <!-- ===== TOP BAR ===== -->
     <div class="top-bar">
         <div class="logo">
             <div class="coatsmall">
-                <svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="50" y="50" width="200" height="250" fill="#1E3A8A" rx="10" />
-                    <rect x="120" y="120" width="60" height="100" fill="#E5E7EB" />
-                    <rect x="110" y="120" width="80" height="20" fill="#E5E7EB" />
-                    <rect x="130" y="80" width="40" height="40" fill="#E5E7EB" />
-                    <rect x="125" y="220" width="10" height="20" fill="#9CA3AF" />
-                    <rect x="145" y="220" width="10" height="20" fill="#9CA3AF" />
-                    <rect x="165" y="220" width="10" height="20" fill="#9CA3AF" />
-                    <ellipse cx="100" cy="100" rx="15" ry="20" fill="#F59E0B" />
-                    <rect x="95" y="85" width="10" height="10" fill="#F59E0B" />
-                    <line x1="180" y1="80" x2="220" y2="120" stroke="#F59E0B" stroke-width="4" />
-                    <line x1="220" y1="80" x2="180" y2="120" stroke="#F59E0B" stroke-width="4" />
-                    <path d="M30,50 Q50,30 70,50 L90,70 Q110,50 130,70 L150,50 Q170,30 190,50 L210,70 Q230,50 250,70 L270,50"
-                          fill="none" stroke="#F59E0B" stroke-width="8" />
-                    <path d="M30,280 Q50,300 70,280 L90,260 Q110,280 130,260 L150,280 Q170,300 190,280 L210,260 Q230,280 250,260 L270,280"
-                          fill="none" stroke="#F59E0B" stroke-width="8" />
-                    <rect x="100" y="10" width="100" height="30" fill="#E5E7EB" />
-                    <rect x="90" y="20" width="20" height="20" fill="#E5E7EB" />
-                    <rect x="110" y="20" width="20" height="20" fill="#E5E7EB" />
-                    <rect x="130" y="20" width="20" height="20" fill="#E5E7EB" />
-                    <rect x="150" y="20" width="20" height="20" fill="#E5E7EB" />
-                    <rect x="170" y="20" width="20" height="20" fill="#E5E7EB" />
+                <svg viewBox="0 0 420 480" xmlns="http://www.w3.org/2000/svg">
+                    <clipPath id="shieldClipSmall">
+                        <path d="M210,20 C280,40 400,80 400,200 C400,340 300,440 210,460 C120,440 20,340 20,200 C20,80 140,40 210,20Z"/>
+                    </clipPath>
+                    <g clip-path="url(#shieldClipSmall)">
+                        <rect width="420" height="480" fill="#f0e4d0"/>
+                        <polygon points="0,0 420,0 420,480 0,480" fill="url(#fieldGradSmall)"/>
+                        <defs>
+                            <linearGradient id="fieldGradSmall" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#1a3d7a"/>
+                                <stop offset="50%" stop-color="#1a3d7a"/>
+                                <stop offset="50%" stop-color="#b31b1b"/>
+                                <stop offset="100%" stop-color="#b31b1b"/>
+                            </linearGradient>
+                        </defs>
+                        <text x="50" y="80" font-size="36" fill="#f7d44a" opacity="0.4" transform="rotate(-15,50,80)">☀︎</text>
+                        <text x="320" y="400" font-size="40" fill="#f7d44a" opacity="0.4" transform="rotate(25,320,400)">☀︎</text>
+                        <rect x="175" y="120" width="70" height="220" rx="8" fill="#c8c0b0" stroke="#a09888" stroke-width="1.5"/>
+                        <rect x="160" y="100" width="100" height="20" rx="10" fill="#d8d0c0" stroke="#b0a898" stroke-width="1"/>
+                        <polygon points="170,180 185,165 200,180 185,195" fill="rgba(255,255,240,0.5)" stroke="#c8c0b0" stroke-width="1"/>
+                        <polygon points="215,230 228,218 241,230 228,242" fill="rgba(255,255,240,0.5)" stroke="#c8c0b0" stroke-width="1"/>
+                        <polygon points="163,290 182,272 201,290 182,308" fill="rgba(255,255,240,0.5)" stroke="#c8c0b0" stroke-width="1"/>
+                        <ellipse cx="140" cy="100" rx="8" ry="12" fill="#1f1f1f" opacity="0.5" transform="rotate(20,140,100)"/>
+                        <ellipse cx="280" cy="130" rx="7" ry="10" fill="#1f1f1f" opacity="0.5" transform="rotate(-15,280,130)"/>
+                        <ellipse cx="140" cy="360" rx="10" ry="14" fill="#1f1f1f" opacity="0.5" transform="rotate(35,140,360)"/>
+                        <polygon points="120,230 133,218 146,230 133,242" fill="#f7d44a" opacity="0.5" stroke="#b38f2e" stroke-width="1"/>
+                        <polygon points="290,250 300,240 310,250 300,260" fill="#f7d44a" opacity="0.5" stroke="#b38f2e" stroke-width="1"/>
+                        <g transform="translate(300,200) scale(0.35)" opacity="0.3">
+                            <rect x="10" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(30,15,45)"/>
+                            <rect x="4" y="5" width="22" height="12" rx="4" fill="#3d3d3d"/>
+                            <rect x="40" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(-40,45,45)"/>
+                            <ellipse cx="40" cy="7" rx="14" ry="6" fill="#3d3d3d"/>
+                            <ellipse cx="56" cy="83" rx="8" ry="6" fill="#3d3d3d"/>
+                        </g>
+                        <text x="320" y="140" font-size="28" opacity="0.4">⚖️</text>
+                        <g transform="translate(210,20) scale(0.7)">
+                            <polygon points="-45,20 -35,2 -25,14 -15,0 -5,14 5,0 15,14 25,2 35,20 30,30 -30,30" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
+                            <circle cx="-20" cy="12" r="3" fill="#d43f3f"/>
+                            <circle cx="0" cy="10" r="3" fill="#d43f3f"/>
+                            <circle cx="20" cy="12" r="3" fill="#d43f3f"/>
+                            <path d="M-35,25 L35,25 L30,35 L-30,35 Z" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
+                            <rect x="-30" y="30" width="8" height="6" fill="#b38f2e"/>
+                            <rect x="-10" y="30" width="8" height="6" fill="#b38f2e"/>
+                            <rect x="10" y="30" width="8" height="6" fill="#b38f2e"/>
+                            <circle cx="0" cy="4" r="4" fill="#d43f3f" stroke="#8a2a2a" stroke-width="1"/>
+                        </g>
+                    </g>
                 </svg>
             </div>
             <h1>Борислав <small>Цифровий двійник</small></h1>
@@ -1415,13 +1569,14 @@
             document.getElementById('infoTitle').textContent = '🛡️ Герб Борислава';
             document.getElementById('infoSub').textContent = '🏛️ Символ міста';
             document.getElementById('infoDetail').innerHTML = `
-                <i class="fas fa-shield-alt"></i> Синій щит — символ вірності<br>
-                <i class="fas fa-tower-observation"></i> Вежа — символ захисту<br>
-                <i class="fas fa-bell"></i> Дзвін — історична спадщина<br>
-                <i class="fas fa-sword"></i> Мечі — мужність захисників<br>
-                <i class="fas fa-crown"></i> Корона — міське самоврядування<br>
+                <i class="fas fa-shield-alt"></i> Синьо-червоний щит — історична спадщина<br>
+                <i class="fas fa-mountain"></i> Соляний мегаліт — сіль з кам\'яної доби<br>
+                <i class="fas fa-sun"></i> Солярні знаки — давні символи<br>
                 <i class="fas fa-oil-can"></i> Нафта — головне багатство<br>
-                <i class="fas fa-gem"></i> Озокерит — унікальний ресурс
+                <i class="fas fa-gem"></i> Озокерит — унікальний ресурс<br>
+                <i class="fas fa-gavel"></i> Молот і кирка — гірнича справа<br>
+                <i class="fas fa-balance-scale"></i> Торгові ваги — давня торгівля сіллю<br>
+                <i class="fas fa-crown"></i> Корона — Австро-Венгерська спадщина
             `;
             document.getElementById('infoCoords').textContent = 'Борислав, Львівська обл.';
             panel.classList.add('visible');
@@ -2392,7 +2547,7 @@
             window.notify = notify;
 
             console.log('🚀 Цифровий двійник Борислава запущено!');
-            console.log('🛡️ Герб Борислава інтегровано');
+            console.log('🛡️ Новий герб Борислава інтегровано');
             console.log('📍 2D та 3D режими доступні');
             console.log('🏗️ 10 будівель, 5 доріг, 2 водойми');
             console.log('🛢️ 3 нафтові родовища, 2 озокеритові');
@@ -2404,13 +2559,12 @@
                 document.getElementById('infoTitle').textContent = '🛡️ Ласкаво просимо!';
                 document.getElementById('infoSub').textContent = 'Цифровий двійник Борислава';
                 document.getElementById('infoDetail').innerHTML = `
-                    <i class="fas fa-shield-alt"></i> Герб Борислава — символ міста<br>
+                    <i class="fas fa-shield-alt"></i> Новий герб Борислава<br>
+                    <i class="fas fa-mountain"></i> Сіль з кам\'яної доби<br>
                     <i class="fas fa-cube"></i> 3D — огляд міста<br>
                     <i class="fas fa-map"></i> 2D — детальна карта<br>
                     <i class="fas fa-oil-can"></i> Нафтові родовища Борислава<br>
-                    <i class="fas fa-gem"></i> Озокерит — унікальний ресурс<br>
-                    <i class="fas fa-building"></i> ${BORYSLAV_DATA.buildings.length} будівель<br>
-                    <i class="fas fa-bars"></i> Меню для керування шарами
+                    <i class="fas fa-gem"></i> Озокерит — унікальний ресурс
                 `;
                 document.getElementById('infoCoords').textContent = 'Борислав, Україна';
                 setTimeout(() => { panel.classList.remove('visible'); }, 6000);
