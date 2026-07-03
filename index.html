@@ -89,26 +89,127 @@
             background: rgba(10, 14, 23, 0.95) !important;
         }
 
-        /* ===== COAT OF ARMS (Новий герб Борислава) ===== */
+        /* ===== COAT OF ARMS (Новий герб Борислава) - ВЕРХНЄ РОЗТАШУВАННЯ ===== */
         .coat-of-arms {
             position: absolute;
-            bottom: 90px;
+            top: 70px;
             right: 20px;
             z-index: 999;
-            width: 100px;
-            height: 120px;
-            opacity: 0.85;
+            width: 80px;
+            height: 96px;
+            opacity: 0.9;
             transition: all 0.3s ease;
             cursor: pointer;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
         }
         .coat-of-arms:hover {
             opacity: 1;
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
         .coat-of-arms svg {
             width: 100%;
             height: 100%;
+        }
+
+        /* ===== PTERODACTYL-TRYZUB CHIP (Зелений чіп) ===== */
+        .pterodactyl-chip {
+            position: absolute;
+            bottom: 90px;
+            right: 20px;
+            z-index: 9999;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 20px rgba(0, 200, 0, 0.15));
+        }
+        .pterodactyl-chip:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 4px 30px rgba(0, 200, 0, 0.3));
+        }
+        .pterodactyl-chip .chip-inner {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a5a1a 0%, #0d3a0d 100%);
+            border-radius: 16px;
+            border: 2px solid #2a6a2a;
+            box-shadow: 0 0 0 2px #1a3a1a, 0 0 0 4px #2a5a2a, inset 0 0 30px rgba(0, 200, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .pterodactyl-chip .chip-traces {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+        .pterodactyl-chip .chip-traces .trace {
+            position: absolute;
+            background: #3a8a3a;
+            border-radius: 2px;
+        }
+        .pterodactyl-chip .chip-traces .trace:nth-child(1) { top: 6px; left: 4px; width: 20px; height: 2px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(2) { top: 6px; right: 4px; width: 20px; height: 2px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(3) { bottom: 6px; left: 4px; width: 20px; height: 2px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(4) { bottom: 6px; right: 4px; width: 20px; height: 2px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(5) { top: 4px; left: 6px; width: 2px; height: 20px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(6) { top: 4px; right: 6px; width: 2px; height: 20px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(7) { bottom: 4px; left: 6px; width: 2px; height: 20px; }
+        .pterodactyl-chip .chip-traces .trace:nth-child(8) { bottom: 4px; right: 6px; width: 2px; height: 20px; }
+
+        .pterodactyl-chip .chip-pads {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .pterodactyl-chip .chip-pads .pad {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #4a8a4a;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(74, 138, 74, 0.4);
+        }
+        .pterodactyl-chip .chip-pads .pad:nth-child(1) { top: 6px; left: 6px; }
+        .pterodactyl-chip .chip-pads .pad:nth-child(2) { top: 6px; right: 6px; }
+        .pterodactyl-chip .chip-pads .pad:nth-child(3) { bottom: 6px; left: 6px; }
+        .pterodactyl-chip .chip-pads .pad:nth-child(4) { bottom: 6px; right: 6px; }
+        .pterodactyl-chip .chip-pads .pad:nth-child(5) { top: 50%; left: 4px; transform: translateY(-50%); }
+        .pterodactyl-chip .chip-pads .pad:nth-child(6) { top: 50%; right: 4px; transform: translateY(-50%); }
+        .pterodactyl-chip .chip-pads .pad:nth-child(7) { top: 4px; left: 50%; transform: translateX(-50%); }
+        .pterodactyl-chip .chip-pads .pad:nth-child(8) { bottom: 4px; left: 50%; transform: translateX(-50%); }
+
+        .pterodactyl-chip .chip-glow {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 215, 0, 0.08);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: chip-pulse 4s ease-in-out infinite;
+        }
+        @keyframes chip-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.2; }
+            50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.6; }
+        }
+
+        .pterodactyl-chip .chip-tryzub {
+            position: relative;
+            z-index: 5;
+            width: 30px;
+            height: 36px;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.15));
+            animation: chip-breathe 3s ease-in-out infinite;
+        }
+        @keyframes chip-breathe {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.1)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.3)); transform: scale(1.06); }
         }
 
         /* ===== TOP BAR ===== */
@@ -721,9 +822,9 @@
                 left: -360px;
             }
             .coat-of-arms {
-                width: 72px;
-                height: 86px;
-                bottom: 80px;
+                width: 64px;
+                height: 76px;
+                top: 66px;
                 right: 12px;
             }
         }
@@ -802,10 +903,24 @@
                 padding: 4px 12px;
             }
             .coat-of-arms {
-                width: 50px;
-                height: 60px;
-                bottom: 68px;
+                width: 48px;
+                height: 58px;
+                top: 62px;
                 right: 8px;
+            }
+            .pterodactyl-chip {
+                width: 56px;
+                height: 56px;
+                bottom: 78px;
+                right: 12px;
+            }
+            .pterodactyl-chip .chip-tryzub {
+                width: 24px;
+                height: 28px;
+            }
+            .pterodactyl-chip .chip-glow {
+                width: 40px;
+                height: 40px;
             }
         }
         @media (max-width: 480px) {
@@ -857,10 +972,31 @@
                 font-size: 14px;
             }
             .coat-of-arms {
-                width: 38px;
-                height: 46px;
-                bottom: 60px;
+                width: 36px;
+                height: 44px;
+                top: 58px;
                 right: 4px;
+            }
+            .pterodactyl-chip {
+                width: 44px;
+                height: 44px;
+                bottom: 68px;
+                right: 8px;
+            }
+            .pterodactyl-chip .chip-tryzub {
+                width: 18px;
+                height: 22px;
+            }
+            .pterodactyl-chip .chip-glow {
+                width: 32px;
+                height: 32px;
+            }
+            .pterodactyl-chip .chip-pads .pad {
+                width: 3px;
+                height: 3px;
+            }
+            .pterodactyl-chip .chip-traces .trace {
+                display: none;
             }
         }
     </style>
@@ -873,10 +1009,9 @@
     <!-- ===== 2D CONTAINER ===== -->
     <div id="leafletContainer"></div>
 
-    <!-- ===== COAT OF ARMS (Новий герб Борислава) ===== -->
+    <!-- ===== COAT OF ARMS (Новий герб Борислава) - ВГОРІ ===== -->
     <div class="coat-of-arms" id="coatOfArms" title="Герб Борислава" onclick="showCoatInfo()">
         <svg viewBox="0 0 420 480" xmlns="http://www.w3.org/2000/svg">
-            <!-- Геральдическое поле — скошенное (Австро-Венгрия) -->
             <clipPath id="shieldClip">
                 <path d="M210,20 C280,40 400,80 400,200 C400,340 300,440 210,460 C120,440 20,340 20,200 C20,80 140,40 210,20Z"/>
             </clipPath>
@@ -891,20 +1026,12 @@
                         <stop offset="100%" stop-color="#b31b1b"/>
                     </linearGradient>
                 </defs>
-
-                <!-- Солнечные знаки -->
                 <text x="50" y="80" font-size="48" fill="#f7d44a" opacity="0.5" transform="rotate(-15,50,80)">☀︎</text>
                 <text x="320" y="400" font-size="54" fill="#f7d44a" opacity="0.5" transform="rotate(25,320,400)">☀︎</text>
-
-                <!-- Солнечное колесо -->
                 <circle cx="340" cy="100" r="28" fill="none" stroke="#f7d44a" stroke-width="4" opacity="0.4"/>
                 <circle cx="340" cy="100" r="6" fill="#f7d44a" opacity="0.4"/>
-
-                <!-- Неолитический крест -->
                 <circle cx="60" cy="400" r="26" fill="none" stroke="#f7d44a" stroke-width="3" opacity="0.3"/>
                 <text x="50" y="418" font-size="36" fill="#f7d44a" opacity="0.3" text-anchor="middle">✚</text>
-
-                <!-- Соляной мегалит -->
                 <rect x="175" y="120" width="70" height="220" rx="8" fill="url(#stoneGrad)" stroke="#a09888" stroke-width="2"/>
                 <defs>
                     <linearGradient id="stoneGrad" x1="0" y1="0" x2="1" y2="1">
@@ -913,28 +1040,19 @@
                         <stop offset="100%" stop-color="#b8b0a0"/>
                     </linearGradient>
                 </defs>
-                <!-- Верх мегалита -->
                 <rect x="160" y="100" width="100" height="24" rx="12" fill="#d8d0c0" stroke="#b0a898" stroke-width="1"/>
-                <!-- Кристаллы соли -->
                 <polygon points="170,180 185,165 200,180 185,195" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
                 <polygon points="215,230 228,218 241,230 228,242" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
                 <polygon points="163,290 182,272 201,290 182,308" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
                 <polygon points="215,140 226,132 237,140 226,148" fill="rgba(255,255,240,0.6)" stroke="#c8c0b0" stroke-width="1"/>
-                <!-- Текст на мегалите -->
                 <text x="210" y="310" font-size="16" fill="#8a7a6a" opacity="0.4" text-anchor="middle" letter-spacing="4">✧ ✧ ✧</text>
-
-                <!-- Капли нефти -->
                 <ellipse cx="140" cy="100" rx="12" ry="16" fill="#1f1f1f" opacity="0.7" transform="rotate(20,140,100)"/>
                 <ellipse cx="280" cy="130" rx="10" ry="14" fill="#1f1f1f" opacity="0.7" transform="rotate(-15,280,130)"/>
                 <ellipse cx="140" cy="360" rx="14" ry="20" fill="#1f1f1f" opacity="0.7" transform="rotate(35,140,360)"/>
                 <ellipse cx="300" cy="380" rx="11" ry="15" fill="#1f1f1f" opacity="0.7" transform="rotate(-30,300,380)"/>
-
-                <!-- Кристаллы озокерита -->
                 <polygon points="120,230 135,215 150,230 135,245" fill="#f7d44a" opacity="0.6" stroke="#b38f2e" stroke-width="1"/>
                 <polygon points="290,250 302,238 314,250 302,262" fill="#f7d44a" opacity="0.6" stroke="#b38f2e" stroke-width="1"/>
                 <polygon points="115,320 128,306 141,320 128,334" fill="#f7d44a" opacity="0.6" stroke="#b38f2e" stroke-width="1"/>
-
-                <!-- Молот и кирка -->
                 <g transform="translate(300,200) scale(0.5)" opacity="0.4">
                     <rect x="10" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(30,15,45)"/>
                     <rect x="4" y="5" width="22" height="12" rx="4" fill="#3d3d3d"/>
@@ -942,11 +1060,7 @@
                     <ellipse cx="40" cy="7" rx="14" ry="6" fill="#3d3d3d"/>
                     <ellipse cx="56" cy="83" rx="8" ry="6" fill="#3d3d3d"/>
                 </g>
-
-                <!-- Торговые весы -->
                 <text x="320" y="140" font-size="40" opacity="0.5">⚖️</text>
-
-                <!-- Корона -->
                 <g transform="translate(210,20)">
                     <polygon points="-45,20 -35,2 -25,14 -15,0 -5,14 5,0 15,14 25,2 35,20 30,30 -30,30" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
                     <circle cx="-20" cy="12" r="3" fill="#d43f3f"/>
@@ -960,6 +1074,32 @@
                 </g>
             </g>
         </svg>
+    </div>
+
+    <!-- ===== PTERODACTYL-TRYZUB CHIP (Зелений чіп) ===== -->
+    <div class="pterodactyl-chip" id="pterodactylChip" title="Pterodactyl-Tryzub — символ цифрової трансформації" onclick="showPterodactylInfo()">
+        <div class="chip-inner">
+            <div class="chip-traces">
+                <span class="trace"></span><span class="trace"></span>
+                <span class="trace"></span><span class="trace"></span>
+                <span class="trace"></span><span class="trace"></span>
+                <span class="trace"></span><span class="trace"></span>
+            </div>
+            <div class="chip-pads">
+                <span class="pad"></span><span class="pad"></span>
+                <span class="pad"></span><span class="pad"></span>
+                <span class="pad"></span><span class="pad"></span>
+                <span class="pad"></span><span class="pad"></span>
+            </div>
+            <div class="chip-glow"></div>
+            <svg class="chip-tryzub" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 15 L35 50 L35 55 L50 40 L65 55 L65 50 L50 15Z" fill="#f7d44a" stroke="#d4a017" stroke-width="1.5"/>
+                <path d="M18 45 L35 50 L35 40 L18 35Z" fill="#f7d44a" stroke="#d4a017" stroke-width="1.5"/>
+                <path d="M82 45 L65 50 L65 40 L82 35Z" fill="#f7d44a" stroke="#d4a017" stroke-width="1.5"/>
+                <path d="M50 10 L50 35 L40 40 L50 28 L60 40 L50 35Z" fill="#f7d44a" stroke="#d4a017" stroke-width="1.5"/>
+                <ellipse cx="45" cy="30" rx="8" ry="4" fill="rgba(255,255,240,0.12)" transform="rotate(-20, 45, 30)"/>
+            </svg>
+        </div>
     </div>
 
     <!-- ===== TOP BAR ===== -->
@@ -2523,7 +2663,26 @@
         }
 
         // ============================================================
-        // 28. INIT
+        // 28. PTERODACTYL-TRYZUB INFO
+        // ============================================================
+        function showPterodactylInfo() {
+            const panel = document.getElementById('infoPanel');
+            document.getElementById('infoTitle').textContent = '🦅 Pterodactyl-Tryzub';
+            document.getElementById('infoSub').textContent = '⚡ Символ цифрової трансформації Борислава';
+            document.getElementById('infoDetail').innerHTML = `
+                <i class="fas fa-microchip"></i> <b>Птеродактель</b> — поєднання давньої сили та сучасних технологій<br>
+                <i class="fas fa-shield-alt"></i> Золотий тризуб на зеленому тлі — символ незламності та відродження<br>
+                <i class="fas fa-code"></i> Цифрова трансформація Борислава<br>
+                <i class="fas fa-rocket"></i> Символ інновацій та прогресу
+            `;
+            document.getElementById('infoCoords').textContent = 'Борислав, Україна';
+            panel.classList.add('visible');
+            if (menuOpen) toggleMenu();
+            notify('🦅 Pterodactyl-Tryzub — символ цифрової трансформації Борислава', 'success');
+        }
+
+        // ============================================================
+        // 29. INIT
         // ============================================================
         function init() {
             initCesium();
@@ -2544,10 +2703,12 @@
             window.switchLanguage = switchLanguage;
             window.generateReport = generateReport;
             window.showCoatInfo = showCoatInfo;
+            window.showPterodactylInfo = showPterodactylInfo;
             window.notify = notify;
 
             console.log('🚀 Цифровий двійник Борислава запущено!');
             console.log('🛡️ Новий герб Борислава інтегровано');
+            console.log('🦅 Pterodactyl-Tryzub — символ цифрової трансформації');
             console.log('📍 2D та 3D режими доступні');
             console.log('🏗️ 10 будівель, 5 доріг, 2 водойми');
             console.log('🛢️ 3 нафтові родовища, 2 озокеритові');
@@ -2572,7 +2733,7 @@
         }
 
         // ============================================================
-        // 29. START
+        // 30. START
         // ============================================================
         window.onload = function() { setTimeout(init, 500); };
         window.onbeforeunload = function() { if (cesiumViewer) cesiumViewer.destroy(); };
