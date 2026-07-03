@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Розвиток проекту — Roadmap | Цифровий двійник Борислава</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e17;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 40px;
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .header .logo .coatsmall {
+            width: 48px;
+            height: 58px;
+            opacity: 0.95;
+            flex-shrink: 0;
+        }
+
+        .header .logo .coatsmall svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fdcb6e, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .header .subtitle {
+            font-size: 18px;
+            color: #8892a0;
+            letter-spacing: 0.5px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 20px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(253, 203, 110, 0.15);
+            color: #fdcb6e;
+            border: 1px solid rgba(253, 203, 110, 0.2);
+        }
+
+        /* ===== BACK BUTTON ===== */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #8892a0;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(253, 203, 110, 0.08);
+            border-color: rgba(253, 203, 110, 0.2);
+            color: #fdcb6e;
+        }
+
+        /* ===== SECTION ===== */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fdcb6e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 12px;
+        }
+
+        .section-title i {
+            font-size: 26px;
+        }
+
+        /* ===== STATS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(253, 203, 110, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fdcb6e;
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: #8892a0;
+            margin-top: 4px;
+        }
+
+        /* ===== ROADMAP ===== */
+        .roadmap {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 10px;
+            bottom: 10px;
+            width: 3px;
+            background: linear-gradient(to bottom, #fdcb6e, #1a3d7a, #b31b1b);
+            border-radius: 2px;
+        }
+
+        .roadmap-item {
+            position: relative;
+            padding: 20px 24px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(253, 203, 110, 0.1);
+            transform: translateX(4px);
+        }
+
+        .roadmap-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 28px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 3px solid #fdcb6e;
+            background: #0a0e17;
+            z-index: 1;
+        }
+
+        .roadmap-item.completed::before {
+            background: #81c784;
+            border-color: #81c784;
+            box-shadow: 0 0 20px rgba(129, 199, 132, 0.3);
+        }
+
+        .roadmap-item.in-progress::before {
+            background: #fdcb6e;
+            border-color: #fdcb6e;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(253, 203, 110, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(253, 203, 110, 0);
+            }
+        }
+
+        .roadmap-item .phase {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fdcb6e;
+            margin-bottom: 4px;
+        }
+
+        .roadmap-item .phase i {
+            margin-right: 6px;
+        }
+
+        .roadmap-item .title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 6px;
+        }
+
+        .roadmap-item .desc {
+            font-size: 14px;
+            color: #8892a0;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .roadmap-item .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .roadmap-item .tags span {
+            font-size: 11px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #b0b8c4;
+        }
+
+        .roadmap-item .tags .tag-done {
+            color: #81c784;
+            border-color: rgba(129, 199, 132, 0.2);
+            background: rgba(129, 199, 132, 0.05);
+        }
+
+        .roadmap-item .tags .tag-progress {
+            color: #fdcb6e;
+            border-color: rgba(253, 203, 110, 0.2);
+            background: rgba(253, 203, 110, 0.05);
+        }
+
+        .roadmap-item .tags .tag-plan {
+            color: #74b9ff;
+            border-color: rgba(116, 185, 255, 0.2);
+            background: rgba(116, 185, 255, 0.05);
+        }
+
+        .roadmap-item .tags .tag-future {
+            color: #a29bfe;
+            border-color: rgba(162, 155, 254, 0.2);
+            background: rgba(162, 155, 254, 0.05);
+        }
+
+        /* ===== FEATURES GRID ===== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 18px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(253, 203, 110, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .feature-card .icon {
+            font-size: 24px;
+            color: #fdcb6e;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .feature-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .feature-card p {
+            font-size: 13px;
+            color: #8892a0;
+            line-height: 1.6;
+        }
+
+        .feature-card .status {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .status-done {
+            color: #81c784;
+            background: rgba(129, 199, 132, 0.1);
+        }
+        .status-progress {
+            color: #fdcb6e;
+            background: rgba(253, 203, 110, 0.1);
+        }
+        .status-plan {
+            color: #74b9ff;
+            background: rgba(116, 185, 255, 0.1);
+        }
+        .status-future {
+            color: #a29bfe;
+            background: rgba(162, 155, 254, 0.1);
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 30px 0 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            margin-top: 20px;
+        }
+
+        .footer p {
+            color: #5a6a6a;
+            font-size: 13px;
+        }
+
+        .footer .links {
+            margin-top: 8px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .footer .links a {
+            color: #5a6a6a;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.3s ease;
+        }
+
+        .footer .links a:hover {
+            color: #fdcb6e;
+        }
+
+        .footer .links .sep {
+            color: #3a4a4a;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 26px;
+            }
+            .header .subtitle {
+                font-size: 15px;
+            }
+            .section-title {
+                font-size: 22px;
+            }
+            .roadmap {
+                padding-left: 30px;
+            }
+            .roadmap-item {
+                padding: 16px 18px;
+            }
+            .roadmap-item::before {
+                left: -24px;
+                width: 12px;
+                height: 12px;
+                top: 24px;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .roadmap-item .title {
+                font-size: 17px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .header .logo .coatsmall {
+                width: 32px;
+                height: 38px;
+            }
+            .roadmap {
+                padding-left: 22px;
+            }
+            .roadmap-item::before {
+                left: -16px;
+                width: 10px;
+                height: 10px;
+                top: 22px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .stat-card .number {
+                font-size: 24px;
+            }
+            .stat-card {
+                padding: 12px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ===== HEADER ===== -->
+        <header class="header">
+            <div class="logo">
+                <div class="coatsmall">
+                    <svg viewBox="0 0 420 480" xmlns="http://www.w3.org/2000/svg">
+                        <clipPath id="shieldClipSmall">
+                            <path d="M210,20 C280,40 400,80 400,200 C400,340 300,440 210,460 C120,440 20,340 20,200 C20,80 140,40 210,20Z"/>
+                        </clipPath>
+                        <g clip-path="url(#shieldClipSmall)">
+                            <rect width="420" height="480" fill="#f0e4d0"/>
+                            <polygon points="0,0 420,0 420,480 0,480" fill="url(#fieldGradSmall)"/>
+                            <defs>
+                                <linearGradient id="fieldGradSmall" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stop-color="#1a3d7a"/>
+                                    <stop offset="50%" stop-color="#1a3d7a"/>
+                                    <stop offset="50%" stop-color="#b31b1b"/>
+                                    <stop offset="100%" stop-color="#b31b1b"/>
+                                </linearGradient>
+                            </defs>
+                            <text x="50" y="80" font-size="36" fill="#f7d44a" opacity="0.4" transform="rotate(-15,50,80)">☀︎</text>
+                            <text x="320" y="400" font-size="40" fill="#f7d44a" opacity="0.4" transform="rotate(25,320,400)">☀︎</text>
+                            <rect x="175" y="120" width="70" height="220" rx="8" fill="#c8c0b0" stroke="#a09888" stroke-width="1.5"/>
+                            <rect x="160" y="100" width="100" height="20" rx="10" fill="#d8d0c0" stroke="#b0a898" stroke-width="1"/>
+                            <polygon points="170,180 185,165 200,180 185,195" fill="rgba(255,255,240,0.5)" stroke="#c8c0b0" stroke-width="1"/>
+                            <polygon points="215,230 228,218 241,230 228,242" fill="rgba(255,255,240,0.5)" stroke="#c8c0b0" stroke-width="1"/>
+                            <polygon points="163,290 182,272 201,290 182,308" fill="rgba(255,255,240,0.5)" stroke="#c8c0b0" stroke-width="1"/>
+                            <ellipse cx="140" cy="100" rx="8" ry="12" fill="#1f1f1f" opacity="0.5" transform="rotate(20,140,100)"/>
+                            <ellipse cx="280" cy="130" rx="7" ry="10" fill="#1f1f1f" opacity="0.5" transform="rotate(-15,280,130)"/>
+                            <ellipse cx="140" cy="360" rx="10" ry="14" fill="#1f1f1f" opacity="0.5" transform="rotate(35,140,360)"/>
+                            <polygon points="120,230 133,218 146,230 133,242" fill="#f7d44a" opacity="0.5" stroke="#b38f2e" stroke-width="1"/>
+                            <polygon points="290,250 300,240 310,250 300,260" fill="#f7d44a" opacity="0.5" stroke="#b38f2e" stroke-width="1"/>
+                            <g transform="translate(300,200) scale(0.35)" opacity="0.3">
+                                <rect x="10" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(30,15,45)"/>
+                                <rect x="4" y="5" width="22" height="12" rx="4" fill="#3d3d3d"/>
+                                <rect x="40" y="10" width="10" height="70" rx="3" fill="#3d3d3d" transform="rotate(-40,45,45)"/>
+                                <ellipse cx="40" cy="7" rx="14" ry="6" fill="#3d3d3d"/>
+                                <ellipse cx="56" cy="83" rx="8" ry="6" fill="#3d3d3d"/>
+                            </g>
+                            <text x="320" y="140" font-size="28" opacity="0.4">⚖️</text>
+                            <g transform="translate(210,20) scale(0.7)">
+                                <polygon points="-45,20 -35,2 -25,14 -15,0 -5,14 5,0 15,14 25,2 35,20 30,30 -30,30" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
+                                <circle cx="-20" cy="12" r="3" fill="#d43f3f"/>
+                                <circle cx="0" cy="10" r="3" fill="#d43f3f"/>
+                                <circle cx="20" cy="12" r="3" fill="#d43f3f"/>
+                                <path d="M-35,25 L35,25 L30,35 L-30,35 Z" fill="#f7d44a" stroke="#b38f2e" stroke-width="1.5"/>
+                                <rect x="-30" y="30" width="8" height="6" fill="#b38f2e"/>
+                                <rect x="-10" y="30" width="8" height="6" fill="#b38f2e"/>
+                                <rect x="10" y="30" width="8" height="6" fill="#b38f2e"/>
+                                <circle cx="0" cy="4" r="4" fill="#d43f3f" stroke="#8a2a2a" stroke-width="1"/>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+                <h1>Розвиток проекту</h1>
+            </div>
+            <p class="subtitle">🦅 Цифровий двійник Борислава — Roadmap та плани на майбутнє</p>
+            <span class="badge"><i class="fas fa-flag-checkered"></i> Версія 1.0 · Активний розвиток</span>
+        </header>
+
+        <!-- ===== BACK BUTTON ===== -->
+        <a href="#" class="back-btn" onclick="history.back(); return false;">
+            <i class="fas fa-arrow-left"></i> Назад до платформи
+        </a>
+
+        <!-- ===== STATISTICS ===== -->
+        <section class="section">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="number">12</div><div class="label">Активних шарів</div></div>
+                <div class="stat-card"><div class="number">2,847</div><div class="label">Об'єктів на карті</div></div>
+                <div class="stat-card"><div class="number">86</div><div class="label">Запланованих функцій</div></div>
+                <div class="stat-card"><div class="number">32</div><div class="label">Виконаних задач</div></div>
+                <div class="stat-card"><div class="number">4</div><div class="label">Етапів розвитку</div></div>
+                <div class="stat-card"><div class="number">2026</div><div class="label">Рік запуску</div></div>
+            </div>
+        </section>
+
+        <!-- ===== ROADMAP ===== -->
+        <section class="section">
+            <h2 class="section-title"><i class="fas fa-road"></i> Дорожня карта розвитку</h2>
+
+            <div class="roadmap">
+
+                <!-- Phase 1 -->
+                <div class="roadmap-item completed">
+                    <div class="phase"><i class="fas fa-check-circle" style="color:#81c784;"></i> Етап 1 · Завершено</div>
+                    <div class="title">🏗️ Базова платформа</div>
+                    <div class="desc">
+                        Створення основи платформи — 2D та 3D візуалізація, базові шари даних,
+                        інтерактивна карта Борислава. Інтеграція герба міста та основних об'єктів інфраструктури.
+                    </div>
+                    <div class="tags">
+                        <span class="tag-done"><i class="fas fa-check"></i> 2D/3D мапи</span>
+                        <span class="tag-done"><i class="fas fa-check"></i> Базові шари</span>
+                        <span class="tag-done"><i class="fas fa-check"></i> Інтерфейс</span>
+                        <span class="tag-done"><i class="fas fa-check"></i> 12 шарів</span>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="roadmap-item in-progress">
+                    <div class="phase"><i class="fas fa-spinner fa-spin" style="color:#fdcb6e;"></i> Етап 2 · В процесі</div>
+                    <div class="title">📊 Розширення даних та аналітика</div>
+                    <div class="desc">
+                        Додавання нових шарів: геологічні карти, екологічний моніторинг,
+                        демографічні дані, транспортна інфраструктура. Впровадження аналітичних інструментів
+                        та теплових карт.
+                    </div>
+                    <div class="tags">
+                        <span class="tag-progress"><i class="fas fa-spinner fa-spin"></i> Геологічні шари</span>
+                        <span class="tag-progress"><i class="fas fa-spinner fa-spin"></i> Екологія</span>
+                        <span class="tag-plan">Демографія</span>
+                        <span class="tag-plan">Транспорт</span>
+                        <span class="tag-plan">Аналітика</span>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="roadmap-item">
+                    <div class="phase"><i class="fas fa-clock" style="color:#74b9ff;"></i> Етап 3 · Планується</div>
+                    <div class="title">🚀 Інтерактивність та взаємодія</div>
+                    <div class="desc">
+                        Впровадження функцій взаємодії з користувачами: повідомлення про проблеми,
+                        коментарі, голосування, фото/відео завантаження. Інтеграція з соціальними мережами
+                        та мобільними додатками.
+                    </div>
+                    <div class="tags">
+                        <span class="tag-plan"><i class="fas fa-clock"></i> Зворотний зв'язок</span>
+                        <span class="tag-plan"><i class="fas fa-clock"></i> Мобільний додаток</span>
+                        <span class="tag-future">Голосування</span>
+                        <span class="tag-future">Фото-звіти</span>
+                    </div>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="roadmap-item">
+                    <div class="phase"><i class="fas fa-rocket" style="color:#a29bfe;"></i> Етап 4 · Майбутнє</div>
+                    <div class="title">🧠 Штучний інтелект та прогнозування</div>
+                    <div class="desc">
+                        Використання AI для прогнозування: аналіз даних, передбачення навантаження на інфраструктуру,
+                        розумне планування міста. AR/VR візуалізація, віртуальні тури, інтеграція з IoT пристроями.
+                    </div>
+                    <div class="tags">
+                        <span class="tag-future"><i class="fas fa-robot"></i> AI прогнозування</span>
+                        <span class="tag-future"><i class="fas fa-vr-cardboard"></i> AR/VR</span>
+                        <span class="tag-future"><i class="fas fa-microchip"></i> IoT</span>
+                        <span class="tag-future"><i class="fas fa-brain"></i> Розумне місто</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== FEATURES ===== -->
+        <section class="section">
+            <h2 class="section-title"><i class="fas fa-list-check"></i> Плани розвитку — повний список</h2>
+
+            <div class="features-grid">
+
+                <!-- Map -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-map"></i></span>
+                    <h4>Теплові карти</h4>
+                    <p>Візуалізація даних у вигляді теплових карт: населення, забруднення, шум, температура.</p>
+                    <span class="status status-progress">🔄 В процесі</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-ruler-combined"></i></span>
+                    <h4>Вимірювання на карті</h4>
+                    <p>Вимірювання відстаней, площ, азимутів. Побудова маршрутів між точками.</p>
+                    <span class="status status-plan">📋 Планується</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-search-location"></i></span>
+                    <h4>Розширений пошук</h4>
+                    <p>Пошук за адресою, назвою, кадастровим номером. Автодоповнення та фільтри.</p>
+                    <span class="status status-plan">📋 Планується</span>
+                </div>
+
+                <!-- Infrastructure -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-bus"></i></span>
+                    <h4>Громадський транспорт</h4>
+                    <p>Маршрути автобусів, тролейбусів, зупинки з розкладом. Онлайн трекінг транспорту.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-trash"></i></span>
+                    <h4>Моніторинг сміття</h4>
+                    <p>Мапа сміттєвих контейнерів з рівнем заповненості та графіком вивезення.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-hard-hat"></i></span>
+                    <h4>Будівництво та дозволи</h4>
+                    <p>Мапа новобудов, будівельних майданчиків, дозволів на будівництво.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <!-- Environment -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-leaf"></i></span>
+                    <h4>Екологічний моніторинг</h4>
+                    <p>Якість повітря, води, ґрунтів. Радіаційний фон. Електромагнітне забруднення.</p>
+                    <span class="status status-progress">🔄 В процесі</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-tree"></i></span>
+                    <h4>Детальна карта дерев</h4>
+                    <p>Інтерактивна мапа кожного дерева з інформацією про вид, вік, стан.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-mountain"></i></span>
+                    <h4>Геологічні розрізи</h4>
+                    <p>3D візуалізація підземних структур, родовищ, шахт, карстових пустот.</p>
+                    <span class="status status-progress">🔄 В процесі</span>
+                </div>
+
+                <!-- Social -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-graduation-cap"></i></span>
+                    <h4>Освітні заклади</h4>
+                    <p>Детальна інформація про школи, садки: місця, черги, рейтинги, гуртки.</p>
+                    <span class="status status-done">✅ Виконано</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-heartbeat"></i></span>
+                    <h4>Медичні заклади</h4>
+                    <p>Лікарні, поліклініки, аптеки з деталями: відділення, лікарі, графік.</p>
+                    <span class="status status-done">✅ Виконано</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-theater-masks"></i></span>
+                    <h4>Культура та дозвілля</h4>
+                    <p>Театри, музеї, кінотеатри, бібліотеки, спортивні об'єкти. Афіша подій.</p>
+                    <span class="status status-plan">📋 Планується</span>
+                </div>
+
+                <!-- Safety -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-shield-alt"></i></span>
+                    <h4>Безпека міста</h4>
+                    <p>Камери відеоспостереження, поліцейські дільниці, пожежні частини.</p>
+                    <span class="status status-done">✅ Виконано</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-triangle-exclamation"></i></span>
+                    <h4>Надзвичайні ситуації</h4>
+                    <p>Зони ризику: повені, зсуви, карст. Моніторинг погоди та епідемій.</p>
+                    <span class="status status-plan">📋 Планується</span>
+                </div>
+
+                <!-- Analytics -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-chart-bar"></i></span>
+                    <h4>Демографічна аналітика</h4>
+                    <p>Інтерактивні карти населення, міграції, вікової структури, зайнятості.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-chart-line"></i></span>
+                    <h4>Прогнозування AI</h4>
+                    <p>Штучний інтелект для прогнозування навантаження, планування ресурсів.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-database"></i></span>
+                    <h4>Відкриті дані</h4>
+                    <p>Експорт даних у формати GeoJSON, KML, CSV, Shapefile. Відкритий API.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <!-- Interaction -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-bullhorn"></i></span>
+                    <h4>Повідомити про проблему</h4>
+                    <p>Форма для звітів про проблеми: ями, зламані ліхтарі, несанкціоноване сміття.</p>
+                    <span class="status status-plan">📋 Планується</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-vote-yea"></i></span>
+                    <h4>Голосування за проекти</h4>
+                    <p>Голосування мешканців за міські проекти, благоустрій, розвиток.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-mobile-alt"></i></span>
+                    <h4>Мобільний додаток</h4>
+                    <p>Нативний мобільний додаток для iOS та Android з повним функціоналом.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <!-- 3D -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-cube"></i></span>
+                    <h4>3D текстури будівель</h4>
+                    <p>Реалістичні фасади будівель, деталізовані 3D моделі історичних споруд.</p>
+                    <span class="status status-progress">🔄 В процесі</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-vr-cardboard"></i></span>
+                    <h4>Віртуальний тур</h4>
+                    <p>3D тур по місту з можливістю переміщення та огляду визначних місць.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-robot"></i></span>
+                    <h4>AR доповнена реальність</h4>
+                    <p>Відображення інформації про об'єкти через камеру смартфона в реальному часі.</p>
+                    <span class="status status-future">🔮 Майбутнє</span>
+                </div>
+
+                <!-- Special Boryslav -->
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-oil-can" style="color:#8B4513;"></i></span>
+                    <h4>Детальна карта нафтових свердловин</h4>
+                    <p>Технічні характеристики кожної свердловини: глибина, дебіт, стан, історія.</p>
+                    <span class="status status-done">✅ Виконано</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-gem" style="color:#D4A574;"></i></span>
+                    <h4>Озокеритові родовища</h4>
+                    <p>Мапа родовищ озокериту з об'ємами запасів, історією видобутку.</p>
+                    <span class="status status-done">✅ Виконано</span>
+                </div>
+
+                <div class="feature-card">
+                    <span class="icon"><i class="fas fa-history"></i></span>
+                    <h4>Історичні об'єкти нафтопромислів</h4>
+                    <p>Мапа історичних нафтових вишок, музеїв, пам'ятних місць XIX-XX ст.</p>
+                    <span class="status status-plan">📋 Планується</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="footer">
+            <p>
+                <i class="fas fa-code"></i> Цифровий двійник Борислава ·
+                <i class="fas fa-copyright"></i> 2026 ·
+                <i class="fas fa-rocket"></i> Постійний розвиток
+            </p>
+            <div class="links">
+                <a href="#" onclick="history.back(); return false;">
+                    <i class="fas fa-arrow-left"></i> Назад до платформи
+                </a>
+                <span class="sep">|</span>
+                <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                <span class="sep">|</span>
+                <span style="color:#5a6a6a; font-size:13px;">
+                    <i class="fas fa-microchip"></i> Pterodactyl-Tryzub · Cavibara Cartografa · Wellamatores Labs
+                </span>
+            </div>
+        </footer>
+
+    </div>
+
+</body>
+</html>
